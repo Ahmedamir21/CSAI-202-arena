@@ -1,0 +1,81 @@
+@model CorrectStatusViewModel
+@{
+    ViewData["Title"] = "Correct a status";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Find the parcel</h3>
+        <p class="small muted">Type a tracking number, a receiver or a city.</p>
+
+        <form asp-controller="Admin" asp-action="CorrectStatus" method="get" class="row mt-1 no-print">
+            <input asp-for="Search" placeholder="SS-000001, a name or a city" style="flex:1" />
+            <button type="submit" class="btn btn-primary">Find</button>
+        </form>
+
+        @if (string.IsNullOrWhiteSpace(Model.Search))
+        {
+            <p class="muted small mt-2 mb-0">Nothing searched yet.</p>
+        }
+        else if (Model.Found.Count == 0)
+        {
+            <div class="empty">
+                <div class="empty-icon">?</div>
+                <p>No parcel matches "@Model.Search".</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead><tr><th>Tracking</th><th>Route</th><th>Status</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var s in Model.Found)
+                        {
+                            <tr>
+                                <td><strong>@s.TrackingNumber</strong></td>
+                                <td>@s.OriginCity → @s.DestinationCity</td>
+                                <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
+                                <td>
+                                    <button type="button" class="linkish"
+                                            onclick="document.getElementById('correct-@s.ShipmentID').style.display='block'">Correct</button>
+                                </td>
+                            </tr>
+                            <tr id="correct-@s.ShipmentID" style="display:none">
+                                <td colspan="4">
+                                    <form asp-controller="Admin" asp-action="CorrectStatus" method="post" data-validate>
+                                        <input type="hidden" name="ShipmentID" value="@s.ShipmentID" />
+                                        <input type="hidden" name="Search" value="@Model.Search" />
+                                        <div class="field">
+                                            <label>Move it to</label>
+                                            <select name="NewStatusID" asp-items="Model.Statuses"></select>
+                                        </div>
+                                        <div class="field">
+                                            <label>Why are we overriding the normal order?</label>
+                                            <input name="Reason" data-required />
+                                        </div>
+                                        <button type="submit" class="btn btn-sm btn-primary">Correct the status</button>
+                                        <button type="button" class="btn btn-sm btn-ghost" onclick="this.form.parentElement.style.display='none'">Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">Why this page exists</h3>
+        <p class="small muted">
+            A parcel normally follows the statuses in order, and the database refuses a step that
+            makes no sense. Sometimes life disagrees: a courier forgets to press a button, or a
+            parcel is found in a corner of the branch.
+        </p>
+        <p class="small muted mb-0">
+            This page lets an administrator put the parcel on the right status anyway. The reason
+            is written in the history next to the change, so nothing is hidden.
+        </p>
+    </div>
+</div>

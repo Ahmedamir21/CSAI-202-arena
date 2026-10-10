@@ -1,0 +1,82 @@
+@model WaybillRow
+@{
+    ViewData["Title"] = "Waybill " + Model.TrackingNumber;
+    Layout = "_AppLayout";
+}
+<div class="card" style="max-width:720px">
+    <div class="row-between">
+        <div>
+            <h3 class="mb-0">Waybill</h3>
+            <span class="muted small">Print this and stick it on the parcel.</span>
+        </div>
+        <strong class="accent" style="font-size:22px">@Model.TrackingNumber</strong>
+    </div>
+
+    <hr style="border:0;border-top:2px dashed var(--border);margin:18px 0" />
+
+    <div class="grid grid-2">
+        <div>
+            <h4 class="mb-0">Sender</h4>
+            <div>@Model.SenderName</div>
+            @if (!string.IsNullOrEmpty(Model.CompanyName))
+            {
+                <div class="small muted">@Model.CompanyName</div>
+            }
+            <div class="small muted">@Model.SenderPhone</div>
+            <div class="small muted">@Model.SenderAddress</div>
+        </div>
+        <div>
+            <h4 class="mb-0">Receiver</h4>
+            <div>@Model.ReceiverName</div>
+            <div class="small muted">@Model.ReceiverPhone</div>
+            <div class="small muted">@Model.ReceiverAddress</div>
+            <div class="small muted">@Model.DestinationCity, @Model.DestinationGovernorate</div>
+        </div>
+    </div>
+
+    <hr style="border:0;border-top:1px solid var(--border);margin:18px 0" />
+
+    <div class="grid grid-3">
+        <div>
+            <div class="small muted">Service</div>
+            <div>@Model.ServiceLevelName</div>
+        </div>
+        <div>
+            <div class="small muted">Package</div>
+            <div>@Model.PackageTypeName</div>
+        </div>
+        <div>
+            <div class="small muted">Weight</div>
+            <div>@Model.WeightKg.ToString("0.##") kg</div>
+        </div>
+        <div>
+            <div class="small muted">Payment</div>
+            <div>@Model.PaymentMethod</div>
+        </div>
+        <div>
+            <div class="small muted">Price</div>
+            <div>@Model.Price.ToString("0.00") EGP</div>
+        </div>
+        <div>
+            <div class="small muted">Deliver by</div>
+            <div>@Model.ExpectedDeliveryDate.ToString("dd MMM yyyy")</div>
+        </div>
+    </div>
+
+    <div class="center mt-2">
+        <svg viewBox="0 0 240 44" style="height:56px" aria-label="Barcode">
+            @for (int i = 0; i < 60; i++)
+            {
+                int w = 1 + ((i * 7 + Model.TrackingNumber.Length) % 4);
+                <rect x="@(2 + i * 4)" y="2" width="@w" height="40" fill="var(--text)" />
+            }
+        </svg>
+        <div class="small muted">@Model.TrackingNumber</div>
+        @if (!string.IsNullOrEmpty(Model.ProofCode))
+        {
+            <div class="small muted">Proof code: @Model.ProofCode</div>
+        }
+    </div>
+
+    <button type="button" class="btn btn-primary no-print mt-2" onclick="window.print()">Print</button>
+</div>

@@ -1,0 +1,38 @@
+@* The vertical tracking timeline. The customer reads it on the tracking page and the
+   branch and the admin read the same component on the shipment details. *@
+@model List<SwiftShip.Web.Models.TimelineRow>
+@if (Model == null || Model.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon">?</div>
+        <p>This shipment has no status recorded yet.</p>
+    </div>
+}
+else
+{
+    <ul class="timeline">
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var step = Model[i];
+            bool isLast = i == Model.Count - 1;
+            <li class="@(isLast ? "now" : "done")">
+                <strong>@step.StatusName</strong>
+                <div class="when">@step.ChangedAt.ToString("dd MMM yyyy, HH:mm")</div>
+                @if (!string.IsNullOrEmpty(step.Notes))
+                {
+                    <div class="who">@step.Notes</div>
+                }
+                @if (!string.IsNullOrEmpty(step.ChangedByEmployeeName) || !string.IsNullOrEmpty(step.BranchName))
+                {
+                    <div class="who">
+                        @step.ChangedByEmployeeName
+                        @if (!string.IsNullOrEmpty(step.BranchName))
+                        {
+                            <text> &middot; @step.BranchName</text>
+                        }
+                    </div>
+                }
+            </li>
+        }
+    </ul>
+}

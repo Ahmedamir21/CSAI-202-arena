@@ -1,0 +1,72 @@
+@model CitiesAdminViewModel
+@{
+    ViewData["Title"] = "Cities and zones";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Cities we deliver to</h3>
+
+        @if (Model.Cities.Count == 0)
+        {
+            <p class="muted small mb-0">No city yet.</p>
+        }
+        else
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead>
+                        <tr><th>City</th><th>Governorate</th><th>Zone</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Cities)
+                        {
+                            <tr>
+                                <td><strong>@c.CityName</strong></td>
+                                <td>@c.GovernorateName</td>
+                                <td>@c.ZoneName</td>
+                                <td><a asp-controller="Admin" asp-action="Cities" asp-route-editId="@c.CityID">Edit</a></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">@(Model.Editing.CityID > 0 ? "Edit " + Model.Editing.CityName : "Add a city")</h3>
+        <p class="small muted">
+            The zone decides the price: a parcel is priced from the zone of the city it leaves
+            to the zone of the city it reaches.
+        </p>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Admin" asp-action="Cities" method="post" data-validate>
+            <input type="hidden" asp-for="Editing.CityID" />
+
+            <div class="field">
+                <label asp-for="Editing.CityName">City</label>
+                <input asp-for="Editing.CityName" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="Editing.GovernorateName">Governorate</label>
+                <input asp-for="Editing.GovernorateName" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="ZoneID">Zone</label>
+                <select asp-for="ZoneID" asp-items="Model.Zones"></select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save the city</button>
+            @if (Model.Editing.CityID > 0)
+            {
+                <a asp-controller="Admin" asp-action="Cities" class="btn btn-ghost">New city instead</a>
+            }
+        </form>
+    </div>
+</div>

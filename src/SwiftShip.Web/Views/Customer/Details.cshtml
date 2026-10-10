@@ -1,0 +1,174 @@
+@model SwiftShip.Web.ViewModels.ShipmentDetailsViewModel
+@{
+    ViewData["Title"] = "Shipment " + (Model.Shipment?.TrackingNumber ?? "");
+    Layout = "_AppLayout";
+}
+@if (Model.Shipment == null)
+{
+    <div class="card">
+        <div class="empty">
+            <div class="empty-icon">?</div>
+            <p>We could not find that shipment.</p>
+            <a asp-controller="Customer" asp-action="MyShipments" class="btn btn-primary">Back to my shipments</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row-between mb-0">
+        <div>
+            <h3 class="mb-0">@Model.Shipment.TrackingNumber</h3>
+            <span class="muted small">@Model.Shipment.OriginCity → @Model.Shipment.DestinationCity</span>
+        </div>
+        <div class="row no-print">
+            @await Html.PartialAsync("_StatusChip", Model.Shipment.CurrentStatus ?? "")
+            @if (Model.CanCancel)
+            {
+                <button type="button" class="btn btn-sm btn-danger" onclick="document.getElementById('cancel-form').style.display='block'">Cancel shipment</button>
+            }
+            @if (Model.CanPay)
+            {
+                <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('pay-form').style.display='block'">Pay now</button>
+            }
+            <a asp-controller="Customer" asp-action="Invoice" asp-route-id="@Model.Shipment.ShipmentID" class="btn btn-sm btn-ghost">Invoice</a>
+        </div>
+    </div>
+
+    @if (Model.CanCancel)
+    {
+        <form id="cancel-form" asp-controller="Customer" asp-action="Cancel" method="post"
+              class="card mt-2 no-print" style="display:none">
+            <input type="hidden" name="shipmentId" value="@Model.Shipment.ShipmentID" />
+            <h4 class="mb-0">Cancel this shipment</h4>
+            <p class="small muted">Tell us why, so the courier knows. A paid shipment is refunded.</p>
+            <div class="field">
+                <label for="reason">Reason</label>
+                <input id="reason" name="reason" />
+            </div>
+            <button type="submit" class="btn btn-danger">Yes, cancel it</button>
+            <button type="button" class="btn btn-ghost" onclick="this.form.style.display='none'">No, keep it</button>
+        </form>
+    }
+
+    @if (Model.CanPay)
+    {
+        <form id="pay-form" asp-controller="Customer" asp-action="Pay" method="post"
+              class="card mt-2 no-print" style="display:none">
+            <input type="hidden" name="shipmentId" value="@Model.Shipment.ShipmentID" />
+            <h4 class="mb-0">Pay @Model.Shipment.Price.ToString("0.00") EGP</h4>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label for="paymentMethod">How?</label>
+                    <select id="paymentMethod" name="paymentMethod">
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="Wallet">Wallet</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label for="referenceNumber">Reference (optional)</label>
+                    <input id="referenceNumber" name="referenceNumber" />
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Pay</button>
+            <button type="button" class="btn btn-ghost" onclick="this.form.style.display='none'">Not now</button>
+        </form>
+    }
+
+    <div class="grid grid-2 mt-2">
+        <div class="card">
+            <h4 class="mb-0">The parcel</h4>
+            <div class="row-between"><span class="muted small">Service</span><span>@Model.Shipment.ServiceLevelName</span></div>
+            <div class="row-between"><span class="muted small">Package type</span><span>@Model.Shipment.PackageTypeName</span></div>
+            <div class="row-between"><span class="muted small">Weight</span><span>@Model.Shipment.WeightKg.ToString("0.##") kg</span></div>
+            <div class="row-between"><span class="muted small">Declared value</span><span>@Model.Shipment.DeclaredValue.ToString("0.00") EGP</span></div>
+            <div class="row-between"><span class="muted small">Insured</span><span>@(Model.Shipment.IsInsured ? "Yes" : "No")</span></div>
+        </div>
+
+        <div class="card">
+            <h4 class="mb-0">The delivery</h4>
+            <div class="row-between"><span class="muted small">Receiver</span><span>@Model.Shipment.ReceiverName</span></div>
+            <div class="row-between"><span class="muted small">Receiver phone</span><span>@Model.Shipment.ReceiverPhone</span></div>
+            <div class="row-between"><span class="muted small">Courier</span><span>@(Model.Shipment.CourierName ?? "not assigned yet")</span></div>
+            <div class="row-between"><span class="muted small">Booked on</span><span>@Model.Shipment.CreatedAt.ToString("dd MMM yyyy, HH:mm")</span></div>
+            <div class="row-between"><span class="muted small">Promised by</span><span>@Model.Shipment.ExpectedDeliveryDate.ToString("dd MMM yyyy")</span></div>
+            <div class="row-between"><span class="muted small">Price</span><span><strong>@Model.Shipment.Price.ToString("0.00") EGP</strong></span></div>
+            <div class="row-between"><span class="muted small">Payment</span><span>@await Html.PartialAsync("_StatusChip", Model.Shipment.PaymentStatus ?? "")</span></div>
+        </div>
+    </div>
+
+    <div class="grid grid-2 mt-2">
+        <div class="card">
+            <h4 class="mb-0">Where it has been</h4>
+            @await Html.PartialAsync("_Timeline", Model.Timeline)
+        </div>
+
+        <div>
+            @if (Model.CanRate)
+            {
+                <div class="card">
+                    <h4 class="mb-0">How did we do?</h4>
+                    <form asp-controller="Customer" asp-action="Rate" method="post">
+                        <input type="hidden" name="shipmentId" value="@Model.Shipment.ShipmentID" />
+                        <div class="field">
+                            <label asp-for="Stars">Rating out of five</label>
+                            <select asp-for="Stars">
+                                <option value="5">5 - excellent</option>
+                                <option value="4">4 - good</option>
+                                <option value="3">3 - fine</option>
+                                <option value="2">2 - poor</option>
+                                <option value="1">1 - bad</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label asp-for="Comment">Comment</label>
+                            <textarea asp-for="Comment" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send my rating</button>
+                    </form>
+                </div>
+            }
+            else if (Model.Shipment.RatingStars.HasValue)
+            {
+                <div class="card">
+                    <h4 class="mb-0">Your rating</h4>
+                    <p class="accent" style="font-size:26px;margin:4px 0">@Model.Shipment.RatingStars / 5</p>
+                    @if (!string.IsNullOrEmpty(Model.Shipment.RatingComment))
+                    {
+                        <p class="muted small mb-0">@Model.Shipment.RatingComment</p>
+                    }
+                </div>
+            }
+
+            @if (Model.Payments.Count > 0)
+            {
+                <div class="card mt-2">
+                    <h4 class="mb-0">Payments</h4>
+                    <div class="table-wrap mt-1">
+                        <table class="data">
+                            <thead><tr><th>Amount</th><th>Method</th><th>Paid</th></tr></thead>
+                            <tbody>
+                                @foreach (var p in Model.Payments)
+                                {
+                                    <tr>
+                                        <td>@p.Amount.ToString("0.00") EGP</td>
+                                        <td>@p.PaymentMethod</td>
+                                        <td>@(p.PaidAt.HasValue ? p.PaidAt.Value.ToString("dd MMM yyyy, HH:mm") : "pending")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <div class="card mt-2">
+                <h4 class="mb-0">A problem with this parcel?</h4>
+                <p class="small muted">
+                    Open <a asp-controller="Customer" asp-action="Complaints">My complaints</a> and
+                    report it there. We answer every complaint from the branch that handled the parcel.
+                </p>
+            </div>
+        </div>
+    </div>
+}

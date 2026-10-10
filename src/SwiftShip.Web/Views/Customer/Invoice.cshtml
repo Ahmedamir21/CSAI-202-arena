@@ -1,0 +1,44 @@
+@model InvoiceRow
+@{
+    ViewData["Title"] = "Invoice";
+    Layout = "_AppLayout";
+}
+<div class="card" style="max-width:660px">
+    <div class="row-between">
+        <div>
+            <h3 class="mb-0">Invoice</h3>
+            <span class="muted small">@Model.TrackingNumber</span>
+        </div>
+        <span class="chip chip-@Model.PaymentStatus.ToLowerInvariant()">@Model.PaymentStatus</span>
+    </div>
+
+    <hr style="border:0;border-top:1px solid var(--border);margin:18px 0" />
+
+    <div class="row-between"><span class="muted">Customer</span><span>@Model.CustomerName</span></div>
+    @if (!string.IsNullOrEmpty(Model.CompanyName))
+    {
+        <div class="row-between"><span class="muted">Company</span><span>@Model.CompanyName</span></div>
+    }
+    <div class="row-between"><span class="muted">Email</span><span>@Model.Email</span></div>
+    <div class="row-between"><span class="muted">From</span><span>@Model.OriginAddress</span></div>
+    <div class="row-between"><span class="muted">To</span><span>@Model.DestinationAddress</span></div>
+    <div class="row-between"><span class="muted">Receiver</span><span>@Model.ReceiverName (@Model.ReceiverPhone)</span></div>
+    <div class="row-between"><span class="muted">Service level</span><span>@Model.ServiceLevelName</span></div>
+    <div class="row-between"><span class="muted">Package type</span><span>@Model.PackageTypeName</span></div>
+    <div class="row-between"><span class="muted">Weight</span><span>@Model.WeightKg.ToString("0.##") kg</span></div>
+    <div class="row-between"><span class="muted">Declared value</span><span>@Model.DeclaredValue.ToString("0.00") EGP</span></div>
+    <div class="row-between"><span class="muted">Insurance</span><span>@(Model.IsInsured ? "yes" : "no")</span></div>
+    <div class="row-between"><span class="muted">Payment method</span><span>@Model.PaymentMethod</span></div>
+    <div class="row-between"><span class="muted">Reference</span><span>@Model.ReferenceNumber</span></div>
+    <div class="row-between"><span class="muted">Booked on</span><span>@Model.CreatedAt.ToString("dd MMM yyyy, HH:mm")</span></div>
+    <div class="row-between"><span class="muted">Paid on</span><span>@(Model.PaidAt.HasValue ? Model.PaidAt.Value.ToString("dd MMM yyyy, HH:mm") : "not paid yet")</span></div>
+
+    <hr style="border:0;border-top:1px solid var(--border);margin:18px 0" />
+
+    <div class="row-between" style="font-size:22px;font-family:var(--font-head);font-weight:800">
+        <span>Total</span><span class="accent">@Model.Price.ToString("0.00") EGP</span>
+    </div>
+
+    <button type="button" class="btn btn-primary no-print mt-2" onclick="window.print()">Print</button>
+    <a asp-controller="Customer" asp-action="Details" asp-route-id="0" asp-route-code="@Model.TrackingNumber" class="btn btn-ghost no-print mt-2">Back to the shipment</a>
+</div>

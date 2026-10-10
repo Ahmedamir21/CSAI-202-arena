@@ -1,0 +1,216 @@
+@{
+    ViewData["Title"] = "SwiftShip";
+    var cities = ViewBag.Cities as List<string> ?? new List<string>();
+}
+@section Scripts {
+    <script>
+        // the marquee is duplicated once so the loop has no visible seam
+        (function () {
+            var track = document.querySelector('.marquee-track');
+            if (!track) return;
+            track.innerHTML = track.innerHTML + track.innerHTML;
+        })();
+    </script>
+}
+
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <span class="chip chip-atbranch reveal" style="--i:0">Egyptian governorates &middot; 6 branches</span>
+            <h1 class="reveal" style="--i:1">Ship it. Track it. <span class="accent">Delivered.</span></h1>
+            <p class="lead reveal" style="--i:2">
+                Book a parcel from any branch in Egypt, follow every step of its journey, and know
+                exactly who is carrying it. No phone calls, no paper waybills.
+            </p>
+
+            <form asp-controller="Tracking" asp-action="Index" method="get" class="track-form reveal" style="--i:3">
+                <label for="code" class="visually-hidden" style="position:absolute;left:-9999px">Tracking number</label>
+                <input id="code" name="code" type="text" placeholder="Tracking number, for example SS-000001" />
+                <button type="submit" class="btn btn-primary">Track shipment</button>
+            </form>
+
+            <p class="small muted reveal" style="--i:4">
+                Sending something? <a asp-controller="Customer" asp-action="Book">Create a shipment</a>
+                or <a asp-controller="Customer" asp-action="Quote">get a price first</a>.
+            </p>
+        </div>
+
+        <div class="route-card reveal" style="--i:4">
+            <svg viewBox="0 0 420 230" role="img" aria-label="A parcel travelling from the hub to the door">
+                <path id="ss-route" class="route-line"
+                      d="M40 170 C 120 170, 120 60, 210 60 S 320 170, 380 100" />
+                <circle class="route-node" cx="40" cy="170" r="11" />
+                <text class="route-label" x="20" y="196">Hub</text>
+                <circle class="route-node" cx="380" cy="100" r="11" />
+                <text class="route-label" x="352" y="126">Door</text>
+                <circle class="route-node" cx="210" cy="60" r="7" />
+                <text class="route-label" x="196" y="42">Sorting</text>
+
+                @* the truck travelling along the same path *@
+                <g>
+                    <rect x="-13" y="-9" width="26" height="16" rx="3" fill="var(--accent)" />
+                    <circle cx="-7" cy="9" r="3" fill="var(--surface)" />
+                    <circle cx="7" cy="9" r="3" fill="var(--surface)" />
+                    <animateMotion dur="4s" repeatCount="indefinite" rotate="auto">
+                        <mpath href="#ss-route" />
+                    </animateMotion>
+                </g>
+            </svg>
+
+            <div class="float-card" style="left:6%;top:14%">
+                <strong>Delivered</strong>
+                <span class="muted">Signed by receiver</span>
+            </div>
+            <div class="float-card two" style="right:4%;bottom:14%">
+                <strong>Out for delivery</strong>
+                <span class="muted">Courier is nearby</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="marquee">
+    <div class="marquee-track">
+        @foreach (var city in cities)
+        {
+            <span>@city</span>
+        }
+    </div>
+</div>
+
+<section class="section container">
+    <div class="facts">
+        <div class="fact watch">
+            <div class="fact-value accent">4</div>
+            <div class="fact-label">types of user</div>
+        </div>
+        <div class="fact watch">
+            <div class="fact-value accent">6</div>
+            <div class="fact-label">statuses you can follow</div>
+        </div>
+        <div class="fact watch">
+            <div class="fact-value accent">1</div>
+            <div class="fact-label">instant price quote</div>
+        </div>
+        <div class="fact watch">
+            <div class="fact-value accent">24/7</div>
+            <div class="fact-label">tracking</div>
+        </div>
+    </div>
+</section>
+
+<section class="section container" id="how">
+    <div class="section-head">
+        <h2>How it works</h2>
+        <p class="muted">Four steps, and you can stop after the first one if you only want a price.</p>
+    </div>
+    <div class="steps">
+        <div class="step watch">
+            <div class="bar"><i></i></div>
+            <div class="num">1</div>
+            <h4>Ask for a price</h4>
+            <p class="muted small">Choose the two cities, the weight and how fast you want it. The price appears immediately.</p>
+        </div>
+        <div class="step watch">
+            <div class="bar"><i style="animation-delay:.15s"></i></div>
+            <div class="num">2</div>
+            <h4>Book the shipment</h4>
+            <p class="muted small">Pick an address from your address book, write who receives it, and choose how to pay.</p>
+        </div>
+        <div class="step watch">
+            <div class="bar"><i style="animation-delay:.3s"></i></div>
+            <div class="num">3</div>
+            <h4>We move it</h4>
+            <p class="muted small">A courier collects it, the branches sort it, and every step is written down.</p>
+        </div>
+        <div class="step watch">
+            <div class="bar"><i style="animation-delay:.45s"></i></div>
+            <div class="num">4</div>
+            <h4>Follow and rate</h4>
+            <p class="muted small">Watch the timeline, then tell us how the delivery went.</p>
+        </div>
+    </div>
+</section>
+
+<section class="section container" id="who">
+    <div class="section-head">
+        <h2>Who it's for</h2>
+        <p class="muted">Four kinds of people use SwiftShip, and each one sees a different application.</p>
+    </div>
+    <div class="grid grid-4">
+        <div class="role-card watch">
+            <h4>Customers</h4>
+            <ul>
+                <li>Book and track parcels</li>
+                <li>Save your addresses</li>
+                <li>Pay and download an invoice</li>
+                <li>Rate the delivery</li>
+            </ul>
+        </div>
+        <div class="role-card watch">
+            <h4>Couriers</h4>
+            <ul>
+                <li>See today's pickups and deliveries</li>
+                <li>Update the status step by step</li>
+                <li>Record proof of delivery</li>
+                <li>Follow your own performance</li>
+            </ul>
+        </div>
+        <div class="role-card watch">
+            <h4>Branch staff</h4>
+            <ul>
+                <li>Receive and dispatch parcels</li>
+                <li>Assign a courier by name</li>
+                <li>Send parcels to another branch</li>
+                <li>Answer complaints</li>
+            </ul>
+        </div>
+        <div class="role-card watch">
+            <h4>Admins</h4>
+            <ul>
+                <li>Set the prices per zone</li>
+                <li>Manage branches and staff</li>
+                <li>Close complaints</li>
+                <li>Read the company reports</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="section container">
+    <div class="grid grid-2">
+        <div>
+            <h2>Live tracking</h2>
+            <p class="muted">
+                Every parcel carries a tracking number, and every time somebody touches it we write
+                down what happened, when, where and by whom. This is what the customer sees.
+            </p>
+            <a asp-controller="Tracking" asp-action="Index" class="btn btn-primary">Try the tracking page</a>
+        </div>
+        <div class="card">
+            <div class="row-between">
+                <strong>SS-000000</strong>
+                <span class="chip chip-outfordelivery">OutForDelivery</span>
+            </div>
+            <p class="small muted">Cairo &rarr; Mansoura &middot; Express &middot; 2.4 kg</p>
+            <ul class="timeline">
+                <li class="done"><strong>Created</strong><div class="when">10 Oct 2026, 09:12</div><div class="who">Booked by the customer.</div></li>
+                <li class="done"><strong>PickedUp</strong><div class="when">10 Oct 2026, 14:40</div><div class="who">Karim Khaled</div></li>
+                <li class="done"><strong>AtBranch</strong><div class="when">10 Oct 2026, 19:05</div><div class="who">SwiftShip HQ - Nasr City</div></li>
+                <li class="done"><strong>InTransit</strong><div class="when">11 Oct 2026, 06:30</div><div class="who">Left the branch on the line truck.</div></li>
+                <li class="now"><strong>OutForDelivery</strong><div class="when">11 Oct 2026, 11:20</div><div class="who">Omar Fahmy &middot; SwiftShip Mansoura</div></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section class="section container">
+    <div class="cta-band">
+        <h2>Ready to send something?</h2>
+        <p>Create an account, get a price, and book your first parcel in two minutes.</p>
+        <div class="row" style="justify-content:center">
+            <a asp-controller="Account" asp-action="SignUp" class="btn">Create an account</a>
+            <a asp-controller="Customer" asp-action="Quote" class="btn">Get a price quote</a>
+        </div>
+    </div>
+</section>

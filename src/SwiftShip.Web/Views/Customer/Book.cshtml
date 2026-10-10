@@ -1,0 +1,157 @@
+@model SwiftShip.Web.ViewModels.BookShipmentViewModel
+@{
+    ViewData["Title"] = "Book a shipment";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3>Book a shipment</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Customer" asp-action="Book" method="post" data-validate>
+            <div class="field">
+                <label asp-for="SenderAddressID">Collect the parcel from</label>
+                <select asp-for="SenderAddressID" asp-items="Model.MyAddresses.Select(a => new SelectListItem(a.Label + " - " + a.FullAddress, a.AddressID.ToString()))"></select>
+                <div class="hint"><a asp-controller="Customer" asp-action="Addresses">Add an address</a></div>
+            </div>
+
+            <h4 class="mt-2">Who receives it?</h4>
+
+            <div class="field">
+                <label asp-for="ReceiverAddressID">Use one of my saved addresses</label>
+                <select asp-for="ReceiverAddressID">
+                    <option value="">No, I will type the address</option>
+                    @foreach (var a in Model.MyAddresses)
+                    {
+                        <option value="@a.AddressID">@a.Label - @a.FullAddress</option>
+                    }
+                </select>
+                <div class="hint">Leave this empty to send to somebody else.</div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="ReceiverName">Receiver name</label>
+                    <input asp-for="ReceiverName" />
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverPhone">Receiver phone</label>
+                    <input asp-for="ReceiverPhone" />
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="ReceiverCityID">Receiver city</label>
+                    <select asp-for="ReceiverCityID" asp-items="Model.Cities"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverStreet">Street</label>
+                    <input asp-for="ReceiverStreet" />
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="field">
+                    <label asp-for="ReceiverBuildingNo">Building</label>
+                    <input asp-for="ReceiverBuildingNo" />
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverApartmentNo">Flat</label>
+                    <input asp-for="ReceiverApartmentNo" />
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverFloorNo">Floor</label>
+                    <input asp-for="ReceiverFloorNo" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="ReceiverLandmark">Landmark, so the courier finds it</label>
+                <input asp-for="ReceiverLandmark" />
+            </div>
+
+            <h4 class="mt-2">The parcel</h4>
+
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="PackageTypeID">What is inside?</label>
+                    <select asp-for="PackageTypeID" asp-items="Model.PackageTypes"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="ServiceLevelID">How fast?</label>
+                    <select asp-for="ServiceLevelID" asp-items="Model.ServiceLevels"></select>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="WeightKg">Weight (kg)</label>
+                    <input asp-for="WeightKg" type="number" step="0.1" min="0.1" data-positive />
+                </div>
+                <div class="field">
+                    <label asp-for="DeclaredValue">Declared value (EGP)</label>
+                    <input asp-for="DeclaredValue" type="number" step="1" min="0" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="PaymentMethod">Who pays?</label>
+                <select asp-for="PaymentMethod" asp-items="Model.PaymentMethods"></select>
+            </div>
+
+            <div class="field">
+                <label class="check">
+                    <input asp-for="IsInsured" /> Add insurance
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Book the shipment</button>
+        </form>
+    </div>
+
+    <div>
+        <div class="card">
+            <h4 class="mb-0">What happens next</h4>
+            <ul class="small muted">
+                <li>We give your parcel a tracking number straight away.</li>
+                <li>A courier from the branch of your city collects it.</li>
+                <li>You can follow every step on the shipment page.</li>
+                <li>You can still cancel it while it has not been picked up.</li>
+            </ul>
+        </div>
+
+        <div class="card mt-2">
+            <h4 class="mb-0">Your saved addresses</h4>
+            @if (Model.MyAddresses.Count == 0)
+            {
+                <p class="small muted mb-0">
+                    You have none yet. <a asp-controller="Customer" asp-action="Addresses">Add one</a>
+                    and booking takes ten seconds.
+                </p>
+            }
+            else
+            {
+                <ul class="small muted">
+                    @foreach (var a in Model.MyAddresses)
+                    {
+                        <li><strong>@a.Label</strong> &mdash; @a.FullAddress</li>
+                    }
+                </ul>
+                <a asp-controller="Customer" asp-action="Addresses" class="btn btn-sm btn-ghost">Manage addresses</a>
+            }
+        </div>
+
+        <div class="card mt-2">
+            <h4 class="mb-0">Want the price first?</h4>
+            <p class="small muted">
+                You can <a asp-controller="Customer" asp-action="Quote">get a price quote</a> before
+                you commit to anything.
+            </p>
+        </div>
+    </div>
+</div>

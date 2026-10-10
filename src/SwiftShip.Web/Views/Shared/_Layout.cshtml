@@ -1,0 +1,60 @@
+@* The layout of the public pages: the landing page, login, sign up and public tracking. *@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - SwiftShip</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/swiftship.css" />
+</head>
+<body>
+    <header class="site-nav">
+        <div class="nav-inner">
+            <a class="brand" asp-controller="Home" asp-action="Index">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M3 7h11v9H3z" stroke="var(--accent)" stroke-width="2" />
+                    <path d="M14 10h4l3 3v3h-7z" stroke="var(--accent)" stroke-width="2" />
+                    <circle cx="7" cy="18" r="2" stroke="var(--accent)" stroke-width="2" />
+                    <circle cx="17" cy="18" r="2" stroke="var(--accent)" stroke-width="2" />
+                </svg>
+                SwiftShip
+            </a>
+            <nav class="nav-links">
+                <a class="hide-sm" href="#how">How it works</a>
+                <a class="hide-sm" href="#who">Who it's for</a>
+                <a asp-controller="Tracking" asp-action="Index">Tracking</a>
+                @if (ViewBag.Me != null)
+                {
+                    <a asp-controller="Account" asp-action="Profile" class="hide-sm">@ViewBag.Me.DisplayName</a>
+                    <a asp-controller="Account" asp-action="Logout" class="hide-sm">Sign out</a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-primary btn-sm">Sign in</a>
+                }
+                <button type="button" class="theme-toggle" aria-label="Switch to light mode">&#9788;</button>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <div class="row-between">
+                <span>SwiftShip &mdash; CSAI 202 team [T--], Zewail City of Science, Technology and Innovation.</span>
+                <span>Contact: s-ahmed.zeyada@zewailcity.edu.eg</span>
+            </div>
+        </div>
+    </footer>
+
+    <div id="toasts"></div>
+    <script src="~/js/swiftship.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

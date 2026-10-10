@@ -1,0 +1,74 @@
+@model AssignCourierViewModel
+@{
+    ViewData["Title"] = "Assign a courier";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <h3 class="mb-0">Assign a courier</h3>
+    <p class="small muted">Search by tracking number, by receiver, or by city, then pick a courier by name.</p>
+
+    <form asp-controller="Branch" asp-action="Assign" method="get" class="row mt-1 no-print">
+        <input asp-for="Search" placeholder="tracking number, receiver or city" style="max-width:340px" />
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a asp-controller="Branch" asp-action="Assign" class="btn btn-ghost">Clear</a>
+    </form>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-error mt-2">@Model.Error</div>
+    }
+
+    @if (Model.Shipments.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">?</div>
+            <p>No parcel matches that search.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap mt-2">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Tracking</th>
+                        <th>Route</th>
+                        <th>Receiver</th>
+                        <th>Status</th>
+                        <th>Promised by</th>
+                        <th>Assign</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Shipments)
+                    {
+                        <tr>
+                            <td><strong>@s.TrackingNumber</strong></td>
+                            <td>@s.OriginCity → @s.DestinationCity</td>
+                            <td>@s.ReceiverName</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
+                            <td>@s.ExpectedDeliveryDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <form asp-controller="Branch" asp-action="Assign" method="post" class="row" style="gap:6px">
+                                    <input type="hidden" name="ShipmentID" value="@s.ShipmentID" />
+                                    <input type="hidden" name="Search" value="@Model.Search" />
+                                    <select name="CourierID" style="width:auto">
+                                        @foreach (var c in Model.Couriers)
+                                        {
+                                            <option value="@c.CourierID">@c.CourierName (@c.OpenJobs open)</option>
+                                        }
+                                    </select>
+                                    <select name="AssignmentType" style="width:auto">
+                                        <option value="Delivery">Deliver it</option>
+                                        <option value="Pickup">Collect it</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Assign</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

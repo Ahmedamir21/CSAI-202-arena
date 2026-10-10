@@ -1,0 +1,18 @@
+@* A Chart.js chart. The labels and the series are written into the data- attributes as
+   JSON by the Razor view, and the JavaScript only draws them. *@
+@model SwiftShip.Web.Reporting.ReportData
+@{
+    var labels = System.Text.Json.JsonSerializer.Serialize(Model.Labels ?? new List<string>());
+    var series = System.Text.Json.JsonSerializer.Serialize(
+        (Model.Series ?? new List<SwiftShip.Web.Reporting.ReportSeries>())
+            .Select(s => new { name = s.Name, values = s.Values }));
+    string type = Model.ChartType ?? "bar";
+}
+@if (!string.IsNullOrEmpty(type) && Model.Labels != null && Model.Labels.Count > 0)
+{
+    <div class="chart-box">
+        <canvas data-chart="1" data-type="@type"
+                data-labels='@Html.Raw(labels)'
+                data-series='@Html.Raw(series)'></canvas>
+    </div>
+}

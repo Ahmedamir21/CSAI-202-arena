@@ -1,0 +1,151 @@
+@model BranchDashboardViewModel
+@{
+    ViewData["Title"] = "Branch dashboard";
+    Layout = "_AppLayout";
+    var d = Model.Dashboard;
+}
+@if (d == null)
+{
+    <div class="card"><div class="empty"><p>We could not load this branch.</p></div></div>
+}
+else
+{
+    <div class="grid grid-3">
+        <div class="kpi accent-glow">
+            <div class="kpi-label">Waiting here</div>
+            <div class="kpi-value" data-count="@d.WaitingAtBranch">0</div>
+            <div class="kpi-note">parcels sitting in this branch</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">In transit</div>
+            <div class="kpi-value" data-count="@d.InTransit">0</div>
+            <div class="kpi-note">parcels of this branch on the road</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Late</div>
+            <div class="kpi-value" data-count="@d.Delayed">0</div>
+            <div class="kpi-note">past the promised date</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Couriers on duty</div>
+            <div class="kpi-value" data-count="@d.CouriersOnDuty">0</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Open tasks</div>
+            <div class="kpi-value" data-count="@d.OpenAssignments">0</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Open complaints</div>
+            <div class="kpi-value" data-count="@d.OpenComplaints">0</div>
+            <div class="kpi-note"><a asp-controller="Branch" asp-action="Complaints">Answer them</a></div>
+        </div>
+    </div>
+
+    <div class="grid grid-2 mt-3">
+        <div class="card">
+            <h3 class="mb-0">Receive a parcel</h3>
+            <p class="small muted">
+                Scan or type the tracking number of a parcel that just walked through the door.
+            </p>
+            <form asp-controller="Branch" asp-action="Receive" method="post" data-validate>
+                <div class="field">
+                    <label asp-for="TrackingNumber">Tracking number</label>
+                    <input asp-for="TrackingNumber" data-required placeholder="SS-000001" />
+                </div>
+                <div class="field">
+                    <label for="notes">Notes</label>
+                    <input id="notes" name="notes" />
+                </div>
+                <button type="submit" class="btn btn-primary">Receive it</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3 class="mb-0">Quick actions</h3>
+            <div class="row mt-1">
+                <a asp-controller="Branch" asp-action="Assign" class="btn btn-primary">Assign a courier</a>
+                <a asp-controller="Branch" asp-action="WalkIn" class="btn">Walk-in order</a>
+                <a asp-controller="Branch" asp-action="Transfers" class="btn">Transfers</a>
+                <a asp-controller="Branch" asp-action="Failed" class="btn">Failed deliveries</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-2 mt-3">
+        <div class="card">
+            <h3 class="mb-0">Parcels that were here last</h3>
+            @if (d.Recent.Count == 0)
+            {
+                <p class="muted small mb-0">Nothing has passed through this branch yet.</p>
+            }
+            else
+            {
+                <div class="table-wrap mt-1">
+                    <table class="data">
+                        <thead>
+                            <tr>
+                                <th>Tracking</th>
+                                <th>To</th>
+                                <th>Receiver</th>
+                                <th>Status</th>
+                                <th>Late by</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in d.Recent)
+                            {
+                                <tr>
+                                    <td><strong>@s.TrackingNumber</strong></td>
+                                    <td>@s.DestinationCity</td>
+                                    <td>@s.ReceiverName</td>
+                                    <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
+                                    <td>@(s.DaysLate > 0 ? s.DaysLate + " day(s)" : "-")</td>
+                                    <td>
+                                        <a asp-controller="Branch" asp-action="Waybill" asp-route-id="@s.ShipmentID">Waybill</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="card">
+            <h3 class="mb-0">Our couriers</h3>
+            @if (d.Couriers.Count == 0)
+            {
+                <p class="muted small mb-0">No courier works from this branch.</p>
+            }
+            else
+            {
+                <div class="table-wrap mt-1">
+                    <table class="data">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Vehicle</th>
+                                <th>Status</th>
+                                <th>Open jobs</th>
+                                <th>Done today</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in d.Couriers)
+                            {
+                                <tr>
+                                    <td><strong>@c.CourierName</strong></td>
+                                    <td>@c.VehicleType</td>
+                                    <td>@await Html.PartialAsync("_StatusChip", c.CourierStatus ?? "")</td>
+                                    <td>@c.OpenJobs</td>
+                                    <td>@c.DoneToday</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+}

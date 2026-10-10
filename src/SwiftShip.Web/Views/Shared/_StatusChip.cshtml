@@ -1,0 +1,7 @@
+@* A coloured chip for a status. Used on every list, so the colours are always the same. *@
+@model string
+@{
+    string text = Model ?? "";
+    string css = "chip chip-" + text.Replace(" ", "").ToLowerInvariant();
+}
+<span class="@css">@text</span>

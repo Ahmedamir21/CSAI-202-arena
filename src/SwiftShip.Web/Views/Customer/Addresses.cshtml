@@ -1,0 +1,109 @@
+@model AddressBookViewModel
+@{
+    ViewData["Title"] = "Saved addresses";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Your addresses</h3>
+
+        @if (Model.Addresses.Count == 0)
+        {
+            <div class="empty">
+                <div class="empty-icon">+</div>
+                <p>You have not saved an address yet. Save one and booking takes ten seconds.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Address</th>
+                            <th>City</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model.Addresses)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@a.Label</strong>
+                                    @if (a.IsDefault)
+                                    {
+                                        <span class="chip chip-delivered">default</span>
+                                    }
+                                </td>
+                                <td>@a.FullAddress</td>
+                                <td>@a.CityName</td>
+                                <td>
+                                    <form asp-controller="Customer" asp-action="DeleteAddress" asp-route-addressId="@a.AddressID" method="post"
+                                          onsubmit="return confirm('Delete this address?');" style="display:inline">
+                                        <button type="submit" class="linkish">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">Add an address</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Customer" asp-action="Addresses" method="post" data-validate>
+            <input type="hidden" asp-for="Editing.AddressID" />
+
+            <div class="field">
+                <label asp-for="Editing.Label">What should we call it?</label>
+                <select asp-for="Editing.Label" asp-items="Model.Labels"></select>
+            </div>
+            <div class="field">
+                <label asp-for="Editing.CityID">City</label>
+                <select asp-for="Editing.CityID" asp-items="Model.Cities"></select>
+            </div>
+            <div class="field">
+                <label asp-for="Editing.Street">Street</label>
+                <input asp-for="Editing.Street" data-required />
+            </div>
+            <div class="grid grid-3">
+                <div class="field">
+                    <label asp-for="Editing.BuildingNo">Building</label>
+                    <input asp-for="Editing.BuildingNo" data-required />
+                </div>
+                <div class="field">
+                    <label asp-for="Editing.ApartmentNo">Flat</label>
+                    <input asp-for="Editing.ApartmentNo" />
+                </div>
+                <div class="field">
+                    <label asp-for="Editing.FloorNo">Floor</label>
+                    <input asp-for="Editing.FloorNo" />
+                </div>
+            </div>
+            <div class="field">
+                <label asp-for="Editing.Landmark">Landmark</label>
+                <input asp-for="Editing.Landmark" />
+            </div>
+            <div class="field">
+                <label asp-for="Editing.Notes">Notes for the courier</label>
+                <input asp-for="Editing.Notes" />
+            </div>
+            <div class="field">
+                <label class="check">
+                    <input asp-for="Editing.IsDefault" /> Use it as my default address
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Save the address</button>
+        </form>
+    </div>
+</div>

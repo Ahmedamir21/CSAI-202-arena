@@ -1,0 +1,55 @@
+@model SwiftShip.Web.ViewModels.TrackViewModel
+@{
+    ViewData["Title"] = "Track a shipment";
+}
+<div class="container section" style="max-width:820px">
+    <h2>Track a shipment</h2>
+    <p class="muted">You do not need an account to see where a parcel is.</p>
+
+    <form asp-controller="Tracking" asp-action="Index" method="post" class="track-form mb-0" style="max-width:none" data-validate>
+        <input asp-for="TrackingNumber" placeholder="Tracking number, for example SS-000001" data-required />
+        <button type="submit" class="btn btn-primary">Track shipment</button>
+    </form>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-error mt-2">@Model.Error</div>
+    }
+
+    @if (Model.Shipment != null)
+    {
+        <div class="card mt-2">
+            <div class="row-between">
+                <div>
+                    <h3 class="mb-0">@Model.Shipment.TrackingNumber</h3>
+                    <span class="small muted">
+                        @Model.Shipment.OriginCity &rarr; @Model.Shipment.DestinationCity
+                        &middot; @Model.Shipment.ServiceLevelName
+                        &middot; @Model.Shipment.WeightKg.ToString("0.##") kg
+                    </span>
+                </div>
+                @await Html.PartialAsync("_StatusChip", Model.Shipment.CurrentStatus ?? "")
+            </div>
+
+            <div class="grid grid-3 mt-2">
+                <div>
+                    <div class="small muted">Booked</div>
+                    <strong>@Model.Shipment.CreatedAt.ToString("dd MMM yyyy, HH:mm")</strong>
+                </div>
+                <div>
+                    <div class="small muted">Promised by</div>
+                    <strong>@Model.Shipment.ExpectedDeliveryDate.ToString("dd MMM yyyy")</strong>
+                </div>
+                <div>
+                    <div class="small muted">Courier</div>
+                    <strong>@(Model.Shipment.CourierName ?? "not assigned yet")</strong>
+                </div>
+            </div>
+
+            <hr style="border:0;border-top:1px solid var(--border);margin:20px 0" />
+
+            <h4>Where it has been</h4>
+            @await Html.PartialAsync("_Timeline", Model.Timeline)
+        </div>
+    }
+</div>

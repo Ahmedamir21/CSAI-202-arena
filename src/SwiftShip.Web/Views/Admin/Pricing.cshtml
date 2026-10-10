@@ -1,0 +1,146 @@
+@model PricingViewModel
+@{
+    ViewData["Title"] = "Pricing";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <div class="row-between">
+            <h3 class="mb-0">Current prices</h3>
+            <form asp-controller="Admin" asp-action="Pricing" method="get" class="row no-print">
+                <label class="check">
+                    <input type="checkbox" name="onlyActive" value="true" @(Model.OnlyActive ? "checked" : "") /> Only the live rules
+                </label>
+                <button type="submit" class="btn btn-sm btn-primary">Show</button>
+            </form>
+        </div>
+
+        @if (Model.Rules.Count == 0)
+        {
+            <p class="muted small mb-0">No rule matches.</p>
+        }
+        else
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Base</th>
+                            <th>Per kg</th>
+                            <th>Insurance</th>
+                            <th>Since</th>
+                            <th>Shipments</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.Rules)
+                        {
+                            <tr>
+                                <td>@r.FromZone</td>
+                                <td>@r.ToZone</td>
+                                <td>@r.BasePrice.ToString("0.00")</td>
+                                <td>@r.PricePerKg.ToString("0.00")</td>
+                                <td>@((r.InsuranceRate * 100).ToString("0.00"))%</td>
+                                <td>@r.EffectiveFrom.ToString("dd MMM yyyy")</td>
+                                <td>@r.ShipmentsPriced</td>
+                                <td>
+                                    <a asp-controller="Admin" asp-action="Pricing" asp-route-editId="@r.RuleID" asp-route-onlyActive="@Model.OnlyActive">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div>
+        <div class="card">
+            <h3 class="mb-0">@(Model.Editing.RuleID > 0 ? "Change this rule" : "Add a rule")</h3>
+            <p class="small muted">
+                Saving a rule does not erase the old one; it closes it and keeps it in the history,
+                so the price of an old parcel can always be explained.
+            </p>
+
+            @if (Model.Error != null)
+            {
+                <div class="alert alert-error">@Model.Error</div>
+            }
+
+            <form asp-controller="Admin" asp-action="Pricing" method="post" data-validate>
+                <input type="hidden" asp-for="Editing.RuleID" />
+                <input type="hidden" name="OnlyActive" value="@Model.OnlyActive.ToString()" />
+
+                <div class="grid grid-2">
+                    <div class="field">
+                        <label asp-for="Editing.FromZoneID">From zone</label>
+                        <select asp-for="Editing.FromZoneID" asp-items="Model.Zones"></select>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Editing.ToZoneID">To zone</label>
+                        <select asp-for="Editing.ToZoneID" asp-items="Model.Zones"></select>
+                    </div>
+                </div>
+                <div class="grid grid-2">
+                    <div class="field">
+                        <label asp-for="Editing.BasePrice">Base price (EGP)</label>
+                        <input asp-for="Editing.BasePrice" type="number" step="0.01" min="0" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Editing.PricePerKg">Price per kg (EGP)</label>
+                        <input asp-for="Editing.PricePerKg" type="number" step="0.01" min="0" />
+                    </div>
+                </div>
+                <div class="field">
+                    <label asp-for="Editing.InsuranceRate">Insurance rate (a fraction, 0.01 is one percent)</label>
+                    <input asp-for="Editing.InsuranceRate" type="number" step="0.001" min="0" />
+                </div>
+                <div class="field">
+                    <label asp-for="EffectiveFrom">Live from</label>
+                    <input asp-for="EffectiveFrom" type="date" />
+                    <div class="hint">Leave empty to use today.</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save the rule</button>
+                @if (Model.Editing.RuleID > 0)
+                {
+                    <a asp-controller="Admin" asp-action="Pricing" class="btn btn-ghost">New rule instead</a>
+                }
+            </form>
+        </div>
+
+        <div class="card mt-2">
+            <h3 class="mb-0">History of the prices</h3>
+            @if (Model.History.Count == 0)
+            {
+                <p class="muted small mb-0">No old rule yet.</p>
+            }
+            else
+            {
+                <div class="table-wrap mt-1">
+                    <table class="data">
+                        <thead>
+                            <tr><th>From</th><th>To</th><th>Base</th><th>Per kg</th><th>From date</th><th>To date</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model.History)
+                            {
+                                <tr>
+                                    <td>@r.FromZone</td>
+                                    <td>@r.ToZone</td>
+                                    <td>@r.BasePrice.ToString("0.00")</td>
+                                    <td>@r.PricePerKg.ToString("0.00")</td>
+                                    <td>@r.EffectiveFrom.ToString("dd MMM yyyy")</td>
+                                    <td>@(r.EffectiveTo.HasValue ? r.EffectiveTo.Value.ToString("dd MMM yyyy") : "still live")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+@model CourierHistoryViewModel
+@{
+    ViewData["Title"] = "Delivery history";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <h3 class="mb-0">Your delivery history</h3>
+
+    <form asp-controller="Courier" asp-action="History" method="get" class="grid grid-3 mt-2 no-print">
+        <div class="field mb-0">
+            <label asp-for="FromDate">From</label>
+            <input asp-for="FromDate" type="date" />
+        </div>
+        <div class="field mb-0">
+            <label asp-for="ToDate">To</label>
+            <input asp-for="ToDate" type="date" />
+        </div>
+        <div class="field mb-0">
+            <label asp-for="StatusID">Status</label>
+            <select asp-for="StatusID" asp-items="Model.Statuses"></select>
+        </div>
+        <div class="field mb-0" style="align-self:end">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-controller="Courier" asp-action="History" class="btn btn-ghost">Clear</a>
+        </div>
+    </form>
+
+    @if (Model.Shipments.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">&mdash;</div>
+            <p>Nothing here yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap mt-2">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Tracking</th>
+                        <th>Route</th>
+                        <th>Receiver</th>
+                        <th>Status</th>
+                        <th>Booked</th>
+                        <th>Delivered</th>
+                        <th>Rating</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Shipments)
+                    {
+                        <tr>
+                            <td><strong>@s.TrackingNumber</strong></td>
+                            <td>@s.OriginCity → @s.DestinationCity</td>
+                            <td>@s.ReceiverName</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
+                            <td>@s.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td>@(s.DeliveredAt.HasValue ? s.DeliveredAt.Value.ToString("dd MMM yyyy, HH:mm") : "-")</td>
+                            <td>@(s.RatingStars.HasValue ? s.RatingStars.Value + " / 5" : "-")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

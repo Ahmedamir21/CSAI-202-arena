@@ -1,0 +1,98 @@
+@model BranchAdminViewModel
+@{
+    ViewData["Title"] = "Branches";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Our branches</h3>
+
+        @if (Model.Branches.Count == 0)
+        {
+            <p class="muted small mb-0">No branch has been created yet.</p>
+        }
+        else
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Branch</th>
+                            <th>City</th>
+                            <th>Manager</th>
+                            <th>Staff</th>
+                            <th>Open</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var b in Model.Branches)
+                        {
+                            <tr>
+                                <td><strong>@b.BranchName</strong></td>
+                                <td>@b.CityName</td>
+                                <td>@(b.ManagerName ?? "-")</td>
+                                <td>@b.StaffCount</td>
+                                <td>@(b.IsActive ? "yes" : "no")</td>
+                                <td>
+                                    <a asp-controller="Admin" asp-action="Branches" asp-route-editId="@b.BranchID">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">@(Model.Editing.BranchID > 0 ? "Edit " + Model.Editing.BranchName : "Add a branch")</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Admin" asp-action="Branches" method="post" data-validate>
+            <input type="hidden" asp-for="Editing.BranchID" />
+
+            <div class="field">
+                <label asp-for="Editing.BranchName">Name</label>
+                <input asp-for="Editing.BranchName" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="CityID">City</label>
+                <select asp-for="CityID" asp-items="Model.Cities"></select>
+            </div>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="Street">Street</label>
+                    <input asp-for="Street" />
+                </div>
+                <div class="field">
+                    <label asp-for="BuildingNo">Building</label>
+                    <input asp-for="BuildingNo" />
+                </div>
+            </div>
+            <div class="field">
+                <label asp-for="Phone">Phone</label>
+                <input asp-for="Phone" />
+            </div>
+            <div class="field">
+                <label asp-for="ManagerEmployeeID">Who runs it?</label>
+                <select asp-for="ManagerEmployeeID" asp-items="Model.Managers"></select>
+            </div>
+            <div class="field">
+                <label class="check">
+                    <input asp-for="Editing.IsActive" /> This branch is open
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save the branch</button>
+            @if (Model.Editing.BranchID > 0)
+            {
+                <a asp-controller="Admin" asp-action="Branches" class="btn btn-ghost">New branch instead</a>
+            }
+        </form>
+    </div>
+</div>

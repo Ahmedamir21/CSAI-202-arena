@@ -1,0 +1,108 @@
+@model LookupsAdminViewModel
+@{
+    ViewData["Title"] = "Package types and service levels";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div>
+        <div class="card">
+            <h3 class="mb-0">What customers can send</h3>
+            @if (Model.PackageTypes.Count == 0)
+            {
+                <p class="muted small mb-0">No package type yet.</p>
+            }
+            else
+            {
+                <div class="table-wrap mt-2">
+                    <table class="data">
+                        <thead><tr><th>Type</th><th>Maximum weight</th></tr></thead>
+                        <tbody>
+                            @foreach (var p in Model.PackageTypes)
+                            {
+                                <tr>
+                                    <td><strong>@p.Name</strong></td>
+                                    <td>@p.Extra</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="card mt-2">
+            <h4 class="mb-0">Add a new one</h4>
+            <form asp-controller="Admin" asp-action="SavePackageType" method="post" data-validate>
+                <input type="hidden" name="packageTypeId" value="0" id="pt-id" />
+                <div class="field">
+                    <label>Name</label>
+                    <input name="typeName" id="pt-name" data-required />
+                </div>
+                <div class="grid grid-2">
+                    <div class="field">
+                        <label>Maximum weight (kg)</label>
+                        <input name="maxWeightKg" id="pt-weight" type="number" step="0.1" min="0" />
+                    </div>
+                    <div class="field">
+                        <label>Note about the size</label>
+                        <input name="sizeNote" id="pt-size" />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <div>
+        <div class="card">
+            <h3 class="mb-0">How fast they can send it</h3>
+            @if (Model.ServiceLevels.Count == 0)
+            {
+                <p class="muted small mb-0">No service level yet.</p>
+            }
+            else
+            {
+                <div class="table-wrap mt-2">
+                    <table class="data">
+                        <thead><tr><th>Level</th><th>Promise and price</th></tr></thead>
+                        <tbody>
+                            @foreach (var s in Model.ServiceLevels)
+                            {
+                                <tr>
+                                    <td><strong>@s.Name</strong></td>
+                                    <td>@s.Extra</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="card mt-2">
+            <h4 class="mb-0">Add a new one</h4>
+            <form asp-controller="Admin" asp-action="SaveServiceLevel" method="post" data-validate>
+                <input type="hidden" name="serviceLevelId" value="0" />
+                <div class="field">
+                    <label>Name</label>
+                    <input name="levelName" data-required />
+                </div>
+                <div class="grid grid-2">
+                    <div class="field">
+                        <label>Price multiplier</label>
+                        <input name="priceMultiplier" type="number" step="0.01" min="0" value="1" />
+                    </div>
+                    <div class="field">
+                        <label>Promised within (days)</label>
+                        <input name="maxDays" type="number" min="1" value="3" />
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Description</label>
+                    <input name="description" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,100 @@
+%% SwiftShip ER diagram - pages 2 and 3: attributes of every entity.
+%% Conventions used here because Mermaid has no ER shapes:
+%%   __Name__  = key attribute (underline)      ..Name.. = partial key (dashed underline)
+%%   ([...])   = derived attribute (dashed)     {Phone}  = multivalued attribute (double ellipse)
+%%   "X: a, b" = composite attribute
+
+flowchart TB
+  subgraph P1["Page 2 - part 1"]
+    direction LR
+    subgraph UserAccount
+      direction TB
+      UAK["__UserID__"] --- UA1[Username] --- UA2[PasswordHash] --- UA3[PasswordSalt]
+      UA3 --- UA4["Role {Customer, Courier, BranchEmployee, Admin}"] --- UA5[IsActive]
+      UA5 --- UA6[CreatedAt] --- UA7[LastLoginAt] --- UA8[MustChangePassword]
+    end
+    subgraph Customer
+      direction TB
+      CUK["__CustomerID__"] --- CU1[FullName] --- CU2[Email]
+      CU2 --- CU3["{Phone (Number, PhoneType)}"]
+      CU3 --- CU4["CustomerType {Individual, Business}"] --- CU5[CompanyName] --- CU6[CreatedAt]
+    end
+    subgraph Employee
+      direction TB
+      EMK["__EmployeeID__"] --- EM1[FullName] --- EM2[Phone] --- EM3[Email] --- EM4[HireDate]
+      EM4 --- EM5[Salary] --- EM6["AccessLevel (admins only)"] --- EM7[IsActive]
+    end
+    subgraph Courier
+      direction TB
+      COK["__CourierID__"] --- CO1[LicenseNumber]
+      CO1 --- CO2["CourierStatus {Available, OnRoute, Off}"]
+      CO2 --- CO3["Vehicle: PlateNumber, VehicleType, CapacityKg"]
+    end
+    subgraph BranchEmployee
+      direction TB
+      BEK["__EmployeeID__"] --- BE1["Position {Clerk, Supervisor, Manager}"]
+    end
+    subgraph Branch
+      direction TB
+      BRK["__BranchID__"] --- BR1[BranchName] --- BR2[Street] --- BR3[BuildingNo]
+      BR3 --- BR4[Phone] --- BR5[IsActive] --- BR6[ManagerStartDate]
+    end
+    subgraph City
+      direction TB
+      CIK["__CityID__"] --- CI1[CityName] --- CI2[GovernorateName]
+    end
+    subgraph Zone
+      direction TB
+      ZOK["__ZoneID__"] --- ZO1[ZoneName] --- ZO2[Description]
+    end
+  end
+
+flowchart TB
+  subgraph P2["Page 3 - part 2"]
+    direction LR
+    subgraph Address
+      direction TB
+      ADK["__AddressID__"] --- AD1["Label {Home, Work, Warehouse, Other}"]
+      AD1 --- AD2["AddressParts: Street, BuildingNo, ApartmentNo, FloorNo, Landmark"]
+      AD2 --- AD3[Notes] --- AD4[IsDefault]
+    end
+    subgraph Shipment
+      direction TB
+      SHK["__ShipmentID__"] --- SH1[TrackingNumber] --- SH2[ReceiverName] --- SH3[ReceiverPhone]
+      SH3 --- SH4[WeightKg] --- SH5[DeclaredValue] --- SH6[IsInsured] --- SH7[PaymentMethod]
+      SH7 --- SH8[CreatedAt] --- SH9[ExpectedDeliveryDate] --- SH10[DeliveredAt]
+      SH10 --- SH11[RatingStars] --- SH12[RatingComment] --- SH13[RatedAt]
+      SH13 --- SH14[CancelReason] --- SH15[ProofReceiverName] --- SH16[ProofCode]
+      SH16 --- SHD1(["Price (derived)"])
+      SHD1 --- SHD2(["CurrentStatus (derived)"])
+    end
+    subgraph ShipmentStatusHistory
+      direction TB
+      SSP["..SeqNo.."] --- SS1["StatusName {Created, PickedUp, AtBranch, InTransit, OutForDelivery, Delivered, FailedAttempt, Returned, Cancelled}"]
+      SS1 --- SS2[ChangedAt] --- SS3[Notes]
+    end
+    subgraph PackageType
+      direction TB
+      PTK["__PackageTypeID__"] --- PT1[TypeName] --- PT2[MaxWeightKg] --- PT3[SizeNote]
+    end
+    subgraph ServiceLevel
+      direction TB
+      SLK["__ServiceLevelID__"] --- SL1[LevelName] --- SL2[PriceMultiplier] --- SL3[MaxDays]
+    end
+    subgraph PricingRule
+      direction TB
+      PRK["__RuleID__"] --- PR1[BasePrice] --- PR2[PricePerKg] --- PR3[InsuranceRate]
+      PR3 --- PR4[EffectiveFrom] --- PR5[EffectiveTo] --- PR6[IsActive]
+    end
+    subgraph Payment
+      direction TB
+      PAK["__PaymentID__"] --- PA1[Amount] --- PA2[PaymentMethod]
+      PA2 --- PA3["PaymentStatus {Pending, Paid, Refunded}"] --- PA4[PaidAt] --- PA5[ReferenceNumber]
+    end
+    subgraph Complaint
+      direction TB
+      CMK["__ComplaintID__"] --- CM1[Subject] --- CM2[Description]
+      CM2 --- CM3["ComplaintStatus {Open, InProgress, Resolved}"] --- CM4[OpenedAt]
+      CM4 --- CM5[Resolution] --- CM6[ResolvedAt]
+    end
+  end

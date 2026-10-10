@@ -1,0 +1,33 @@
+@model SwiftShip.Web.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Sign in";
+}
+<div class="container section" style="max-width:460px">
+    <div class="card">
+        <h2>Sign in</h2>
+        <p class="muted small">Customers, couriers, branch staff and administrators all sign in here.</p>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Account" asp-action="Login" method="post" data-validate>
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div class="field">
+                <label asp-for="Username">Username</label>
+                <input asp-for="Username" data-required autocomplete="username" />
+            </div>
+            <div class="field">
+                <label asp-for="Password">Password</label>
+                <input asp-for="Password" type="password" data-required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+        </form>
+
+        <p class="small muted mt-2">
+            No account yet? <a asp-controller="Account" asp-action="SignUp">Create one</a>,
+            or <a asp-controller="Tracking" asp-action="Index">track a parcel</a> without signing in.
+        </p>
+    </div>
+</div>

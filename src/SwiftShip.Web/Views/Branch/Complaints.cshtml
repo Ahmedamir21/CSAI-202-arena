@@ -1,0 +1,64 @@
+@model BranchComplaintsViewModel
+@{
+    ViewData["Title"] = "Complaints";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <h3 class="mb-0">Complaints about this branch</h3>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-error">@Model.Error</div>
+    }
+
+    @if (Model.Complaints.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">&#10003;</div>
+            <p>No complaint is waiting for an answer.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-2 mt-2" style="gap:16px">
+            @foreach (var c in Model.Complaints)
+            {
+                <div class="card card-tight">
+                    <div class="row-between">
+                        <strong>@c.Subject</strong>
+                        @await Html.PartialAsync("_StatusChip", c.ComplaintStatus ?? "")
+                    </div>
+                    <p class="small muted">
+                        Shipment @c.TrackingNumber &middot; @c.CustomerName &middot;
+                        opened @c.OpenedAt.ToString("dd MMM yyyy, HH:mm")
+                    </p>
+                    <p class="small">@c.Description</p>
+
+                    @if (!string.IsNullOrEmpty(c.Resolution))
+                    {
+                        <div class="alert alert-info small">
+                            Answered: @c.Resolution
+                        </div>
+                    }
+
+                    @if (c.ComplaintStatus != "Resolved")
+                    {
+                        <form asp-controller="Branch" asp-action="Complaints" method="post" data-validate>
+                            <input type="hidden" name="ComplaintID" value="@c.ComplaintID" />
+                            <div class="field">
+                                <label for="res-@c.ComplaintID">Your answer</label>
+                                <textarea id="res-@c.ComplaintID" name="Resolution" rows="3" data-required></textarea>
+                            </div>
+                            <div class="field">
+                                <label class="check">
+                                    <input type="checkbox" name="CloseIt" value="true" /> This closes the complaint
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Send the answer</button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
