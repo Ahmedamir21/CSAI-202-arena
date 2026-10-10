@@ -1,0 +1,88 @@
+@* One sidebar per role. The items are operations, not table names: "Book a shipment",
+   not "Shipment table". *@
+@{
+    var me = ViewBag.Me as SwiftShip.Web.Services.CurrentUser;
+    string controller = ViewContext.RouteData.Values["controller"] as string ?? "";
+    string action = ViewContext.RouteData.Values["action"] as string ?? "";
+
+    string Active(params string[] actions)
+    {
+        // highlight the item when we are on one of its actions
+        foreach (var a in actions)
+            if (string.Equals(a, action, StringComparison.OrdinalIgnoreCase))
+                return "active";
+        return "";
+    }
+}
+
+@if (me != null && me.IsCustomer)
+{
+    <div class="side-title">My parcels</div>
+    <nav>
+        <a asp-controller="Customer" asp-action="Index" class="@Active("Index")">Overview</a>
+        <a asp-controller="Customer" asp-action="Book" class="@Active("Book")">Book a shipment</a>
+        <a asp-controller="Customer" asp-action="Quote" class="@Active("Quote")">Get a price quote</a>
+        <a asp-controller="Customer" asp-action="MyShipments" class="@Active("MyShipments","Details","Invoice")">My shipments</a>
+        <a asp-controller="Customer" asp-action="Addresses" class="@Active("Addresses")">Saved addresses</a>
+        <a asp-controller="Customer" asp-action="Complaints" class="@Active("Complaints")">My complaints</a>
+    </nav>
+    <div class="side-title">My account</div>
+    <nav>
+        <a asp-controller="Account" asp-action="Profile" class="@(controller == "Account" ? "active" : "")">Profile</a>
+        <a asp-controller="Account" asp-action="ChangePassword" class="@(action == "ChangePassword" ? "active" : "")">Change password</a>
+        <a asp-controller="Tracking" asp-action="Index">Track a parcel</a>
+    </nav>
+}
+else if (me != null && me.IsCourier)
+{
+    <div class="side-title">Today</div>
+    <nav>
+        <a asp-controller="Courier" asp-action="Today" class="@Active("Today")">Today's tasks</a>
+        <a asp-controller="Courier" asp-action="History" class="@Active("History")">Delivery history</a>
+    </nav>
+    <div class="side-title">Me</div>
+    <nav>
+        <a asp-controller="Courier" asp-action="Performance" class="@Active("Performance")">My performance</a>
+        <a asp-controller="Account" asp-action="ChangePassword" class="@(action == "ChangePassword" ? "active" : "")">Change password</a>
+    </nav>
+}
+else if (me != null && me.IsBranchEmployee)
+{
+    <div class="side-title">Operations</div>
+    <nav>
+        <a asp-controller="Branch" asp-action="Index" class="@Active("Index")">Branch dashboard</a>
+        <a asp-controller="Branch" asp-action="Assign" class="@Active("Assign")">Assign a courier</a>
+        <a asp-controller="Branch" asp-action="WalkIn" class="@Active("WalkIn")">Walk-in order</a>
+        <a asp-controller="Branch" asp-action="Transfers" class="@Active("Transfers")">Branch transfers</a>
+        <a asp-controller="Branch" asp-action="Failed" class="@Active("Failed")">Failed deliveries</a>
+        <a asp-controller="Branch" asp-action="Complaints" class="@Active("Complaints")">Complaints</a>
+        <a asp-controller="Tracking" asp-action="Index">Track a parcel</a>
+    </nav>
+    <div class="side-title">My account</div>
+    <nav>
+        <a asp-controller="Account" asp-action="ChangePassword" class="@(action == "ChangePassword" ? "active" : "")">Change password</a>
+    </nav>
+}
+else if (me != null && me.IsAdmin)
+{
+    <div class="side-title">Company</div>
+    <nav>
+        <a asp-controller="Admin" asp-action="Index" class="@Active("Index")">Overview</a>
+        <a asp-controller="Reports" asp-action="Index" class="@(controller == "Reports" ? "active" : "")">Reports</a>
+    </nav>
+    <div class="side-title">Manage</div>
+    <nav>
+        <a asp-controller="Admin" asp-action="Branches" class="@Active("Branches")">Branches</a>
+        <a asp-controller="Admin" asp-action="Cities" class="@Active("Cities")">Cities and zones</a>
+        <a asp-controller="Admin" asp-action="Pricing" class="@Active("Pricing")">Pricing</a>
+        <a asp-controller="Admin" asp-action="Staff" class="@Active("Staff")">Staff</a>
+        <a asp-controller="Admin" asp-action="Customers" class="@Active("Customers")">Customers</a>
+        <a asp-controller="Admin" asp-action="Complaints" class="@Active("Complaints")">Complaints</a>
+        <a asp-controller="Admin" asp-action="Lookups" class="@Active("Lookups")">Package types</a>
+        <a asp-controller="Admin" asp-action="CorrectStatus" class="@Active("CorrectStatus")">Correct a status</a>
+    </nav>
+    <div class="side-title">My account</div>
+    <nav>
+        <a asp-controller="Account" asp-action="ChangePassword" class="@(action == "ChangePassword" ? "active" : "")">Change password</a>
+    </nav>
+}

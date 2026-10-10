@@ -1,0 +1,72 @@
+@model SwiftShip.Web.ViewModels.SignUpViewModel
+@{
+    ViewData["Title"] = "Create an account";
+}
+<div class="container section" style="max-width:560px">
+    <div class="card">
+        <h2>Create an account</h2>
+        <p class="muted small">
+            An account is what you need to book a shipment and follow it. Your password is stored
+            hashed and salted, we never keep the password itself.
+        </p>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Account" asp-action="SignUp" method="post" data-validate>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="FullName">Full name</label>
+                    <input asp-for="FullName" data-required />
+                </div>
+                <div class="field">
+                    <label asp-for="Phone">Phone number</label>
+                    <input asp-for="Phone" data-required placeholder="01012345678" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" type="email" data-required />
+            </div>
+
+            <div class="field">
+                <label asp-for="CustomerType">Who are you?</label>
+                <select asp-for="CustomerType">
+                    <option value="Individual">An individual</option>
+                    <option value="Business">A business</option>
+                </select>
+                <div class="hint">Business accounts must give the company name below.</div>
+            </div>
+
+            <div class="field">
+                <label asp-for="CompanyName">Company name (business accounts only)</label>
+                <input asp-for="CompanyName" />
+            </div>
+
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="Username">Username</label>
+                    <input asp-for="Username" data-required />
+                    <div class="hint">At least 4 characters.</div>
+                </div>
+                <div class="field">
+                    <label asp-for="Password">Password</label>
+                    <input asp-for="Password" type="password" data-required />
+                    <div class="hint">At least 8 characters.</div>
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="ConfirmPassword">Password again</label>
+                <input asp-for="ConfirmPassword" type="password" data-required />
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Create my account</button>
+        </form>
+
+        <p class="small muted mt-2">Already have an account? <a asp-controller="Account" asp-action="Login">Sign in</a>.</p>
+    </div>
+</div>

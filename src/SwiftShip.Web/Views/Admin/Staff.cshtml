@@ -1,0 +1,130 @@
+@model StaffListViewModel
+@{
+    ViewData["Title"] = "Staff";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <div class="row-between">
+        <h3 class="mb-0">Everybody who works here</h3>
+        <a asp-controller="Admin" asp-action="CreateStaff" class="btn btn-primary btn-sm">Add somebody</a>
+    </div>
+
+    <form asp-controller="Admin" asp-action="Staff" method="get" class="grid grid-3 mt-2 no-print">
+        <div class="field mb-0">
+            <label asp-for="Search">Search</label>
+            <input asp-for="Search" placeholder="name, username, email or phone" />
+        </div>
+        <div class="field mb-0">
+            <label asp-for="Role">Role</label>
+            <select asp-for="Role" asp-items="Model.Roles"></select>
+        </div>
+        <div class="field mb-0">
+            <label asp-for="BranchID">Branch</label>
+            <select asp-for="BranchID" asp-items="Model.Branches"></select>
+        </div>
+        <div class="field mb-0" style="align-self:end">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-controller="Admin" asp-action="Staff" class="btn btn-ghost">Clear</a>
+        </div>
+    </form>
+
+    @if (Model.Staff.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">?</div>
+            <p>Nobody matches that search.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap mt-2">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Branch</th>
+                        <th>Username</th>
+                        <th>Hired</th>
+                        <th>Active</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Staff)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@s.FullName</strong>
+                                <div class="small muted">@s.Email &middot; @s.Phone</div>
+                            </td>
+                            <td>
+                                <span class="chip chip-atbranch">@s.Role</span>
+                                @if (s.Role == "Courier")
+                                {
+                                    <div class="small muted">@s.VehicleType @s.PlateNumber</div>
+                                }
+                                else if (s.Role == "BranchEmployee")
+                                {
+                                    <div class="small muted">@s.Position (@s.AccessLevel)</div>
+                                }
+                            </td>
+                            <td>@s.BranchName</td>
+                            <td>@s.Username</td>
+                            <td>@s.HireDate.ToString("dd MMM yyyy")</td>
+                            <td>@(s.IsActive ? "yes" : "no")</td>
+                            <td>
+                                <form asp-controller="Admin" asp-action="SetUserActive" method="post" style="display:inline">
+                                    <input type="hidden" name="userId" value="@s.UserID" />
+                                    <input type="hidden" name="isActive" value="@(s.IsActive ? "false" : "true")" />
+                                    <button type="submit" class="linkish">@(s.IsActive ? "Deactivate" : "Activate")</button>
+                                </form>
+                                @if (s.Role != "Admin")
+                                {
+                                    <text> &middot; </text>
+                                    <button type="button" class="linkish" onclick="document.getElementById('move-@s.UserID').style.display='block'">Move</button>
+                                }
+                                @if (s.Role == "Courier")
+                                {
+                                    <text> &middot; </text>
+                                    <button type="button" class="linkish" onclick="document.getElementById('veh-@s.UserID').style.display='block'">Vehicle</button>
+                                }
+                            </td>
+                        </tr>
+                        <tr id="move-@s.UserID" style="display:none">
+                            <td colspan="7">
+                                <form asp-controller="Admin" asp-action="MoveEmployee" method="post" class="row">
+                                    <input type="hidden" name="userId" value="@s.UserID" />
+                                    <label class="small muted">Move @s.FullName to</label>
+                                    <select name="branchId" asp-items="Model.Branches" style="width:auto"></select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Move</button>
+                                    <button type="button" class="btn btn-sm btn-ghost" onclick="this.form.parentElement.style.display='none'">Cancel</button>
+                                </form>
+                            </td>
+                        </tr>
+                        if (s.Role == "Courier")
+                        {
+                            <tr id="veh-@s.UserID" style="display:none">
+                                <td colspan="7">
+                                    <form asp-controller="Admin" asp-action="AssignVehicle" method="post" class="row">
+                                        <input type="hidden" name="courierId" value="@s.UserID" />
+                                        <input name="plateNumber" placeholder="plate number" style="width:150px" value="@s.PlateNumber" />
+                                        <select name="vehicleType" style="width:auto">
+                                            @foreach (var v in new[] { "Bike", "Car", "Van", "Truck" })
+                                            {
+                                                <option value="@v" selected="@(s.VehicleType == v)">@v</option>
+                                            }
+                                        </select>
+                                        <input name="capacityKg" type="number" step="1" min="1" placeholder="capacity kg" style="width:130px" />
+                                        <button type="submit" class="btn btn-sm btn-primary">Save</button>
+                                        <button type="button" class="btn btn-sm btn-ghost" onclick="this.form.parentElement.style.display='none'">Cancel</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

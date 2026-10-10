@@ -1,0 +1,139 @@
+@model CourierTodayViewModel
+@{
+    ViewData["Title"] = "Today's tasks";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <div class="row-between">
+        <h3 class="mb-0">Your tasks for @Model.Date.ToString("dddd dd MMMM yyyy")</h3>
+        <form asp-controller="Courier" asp-action="Today" method="get" class="row no-print">
+            <input asp-for="Date" type="date" style="width:auto" />
+            <button type="submit" class="btn btn-primary btn-sm">Go</button>
+        </form>
+    </div>
+
+    @if (Model.Tasks.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">&#10003;</div>
+            <p>You have no task for this day. Enjoy the quiet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-2 mt-2" style="gap:16px">
+            @foreach (var t in Model.Tasks)
+            {
+                <div class="card card-tight">
+                    <div class="row-between">
+                        <div>
+                            <strong>@t.TrackingNumber</strong>
+                            <div class="small muted">@t.AssignmentType &middot; @t.PackageTypeName &middot; @t.WeightKg.ToString("0.##") kg</div>
+                        </div>
+                        @await Html.PartialAsync("_StatusChip", t.CurrentStatus)
+                    </div>
+
+                    <div class="row-between mt-1"><span class="muted small">Who</span><span>@t.ContactName &middot; @t.ContactPhone</span></div>
+                    <div class="row-between"><span class="muted small">Where</span><span>@t.StreetAddress, @t.CityName</span></div>
+                    @if (!string.IsNullOrEmpty(t.Landmark))
+                    {
+                        <div class="row-between"><span class="muted small">Landmark</span><span>@t.Landmark</span></div>
+                    }
+                    <div class="row-between"><span class="muted small">Promised by</span><span>@t.ExpectedDeliveryDate.ToString("dd MMM yyyy")</span></div>
+                    @if (t.PaymentMethod == "CashOnDelivery" || t.PaymentMethod == "COD")
+                    {
+                        <div class="row-between"><span class="muted small">Collect</span><span><strong>@t.Price.ToString("0.00") EGP</strong> on delivery</span></div>
+                    }
+
+                    <div class="row mt-2" style="gap:8px">
+                        @if (t.CompletedAt == null)
+                        {
+                            if (t.AssignmentType == "Pickup")
+                            {
+                                <form asp-controller="Courier" asp-action="Pickup" method="post">
+                                    <input type="hidden" name="assignmentId" value="@t.AssignmentID" />
+                                    <input type="hidden" name="shipmentId" value="@t.ShipmentID" />
+                                    <button type="submit" class="btn btn-sm btn-primary">Collected it</button>
+                                </form>
+                                <form asp-controller="Courier" asp-action="CompleteTask" method="post">
+                                    <input type="hidden" name="assignmentId" value="@t.AssignmentID" />
+                                    <button type="submit" class="btn btn-sm btn-ghost">Close the task</button>
+                                </form>
+                            }
+                            else
+                            {
+                                if (t.CurrentStatusID != 5)
+                                {
+                                    <form asp-controller="Courier" asp-action="StartDelivery" method="post">
+                                        <input type="hidden" name="shipmentId" value="@t.ShipmentID" />
+                                        <button type="submit" class="btn btn-sm btn-primary">Start the delivery</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button type="button" class="btn btn-sm btn-primary"
+                                            onclick="document.getElementById('deliver-@t.ShipmentID').style.display='block'">
+                                        Delivered
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                            onclick="document.getElementById('fail-@t.ShipmentID').style.display='block'">
+                                        Could not deliver
+                                    </button>
+                                }
+                                <form asp-controller="Courier" asp-action="CompleteTask" method="post">
+                                    <input type="hidden" name="assignmentId" value="@t.AssignmentID" />
+                                    <button type="submit" class="btn btn-sm btn-ghost">Close the task</button>
+                                </form>
+                            }
+                        }
+                        else
+                        {
+                            <span class="small muted">Closed at @t.CompletedAt.Value.ToString("HH:mm")</span>
+                        }
+
+                        @if ((t.PaymentMethod == "CashOnDelivery" || t.PaymentMethod == "COD") && t.CurrentStatusID == 6)
+                        {
+                            <form asp-controller="Courier" asp-action="CollectCash" method="post">
+                                <input type="hidden" name="shipmentId" value="@t.ShipmentID" />
+                                <button type="submit" class="btn btn-sm btn-primary">Cash collected</button>
+                            </form>
+                        }
+                    </div>
+
+                    @if (t.CurrentStatusID == 5)
+                    {
+                        <form id="deliver-@t.ShipmentID" asp-controller="Courier" asp-action="Deliver" method="post"
+                              class="mt-2" style="display:none" data-validate>
+                            <input type="hidden" name="shipmentId" value="@t.ShipmentID" />
+                            <div class="field">
+                                <label>Who signed for it?</label>
+                                <input name="receiverName" data-required />
+                            </div>
+                            <div class="field">
+                                <label>Proof code</label>
+                                <input name="proofCode" />
+                            </div>
+                            <div class="field">
+                                <label>Notes</label>
+                                <input name="notes" />
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Confirm the delivery</button>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="this.form.style.display='none'">Cancel</button>
+                        </form>
+
+                        <form id="fail-@t.ShipmentID" asp-controller="Courier" asp-action="FailDelivery" method="post"
+                              class="mt-2" style="display:none" data-validate>
+                            <input type="hidden" name="shipmentId" value="@t.ShipmentID" />
+                            <div class="field">
+                                <label>Why not?</label>
+                                <input name="reason" data-required />
+                            </div>
+                            <button type="submit" class="btn btn-danger btn-sm">Record the failed attempt</button>
+                            <button type="button" class="btn btn-ghost btn-sm" onclick="this.form.style.display='none'">Cancel</button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

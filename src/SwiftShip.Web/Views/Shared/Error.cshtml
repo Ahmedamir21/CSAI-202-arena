@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Something went wrong";
+    Layout = "_Layout";
+}
+<div class="container section">
+    <div class="card center" style="max-width:640px;margin:0 auto;">
+        <h1 class="accent">Something went wrong</h1>
+        <p class="muted">
+            We could not finish what you asked for. Go back to the home page and try again;
+            if it keeps happening, tell us the reference below.
+        </p>
+        <p class="small muted">Reference: @ViewBag.Technical</p>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to the home page</a>
+    </div>
+</div>

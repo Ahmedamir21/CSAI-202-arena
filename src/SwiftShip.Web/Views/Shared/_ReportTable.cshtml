@@ -1,0 +1,36 @@
+@* Renders one result set of a report. Every report page uses this, so a new report only
+   needs a stored procedure. *@
+@model SwiftShip.Web.Reporting.ReportTable
+@if (Model == null || Model.Rows.Count == 0)
+{
+    <div class="empty">
+        <div class="empty-icon">&mdash;</div>
+        <p>There is nothing to show for this report yet.</p>
+    </div>
+}
+else
+{
+    <div class="table-wrap">
+        <table class="data" id="@("tbl-" + (Model.Title ?? "report").Replace(" ", "-").ToLowerInvariant())">
+            <thead>
+                <tr>
+                    @foreach (var column in Model.Columns)
+                    {
+                        <th>@column</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        @foreach (var cell in row)
+                        {
+                            <td>@cell</td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

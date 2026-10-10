@@ -1,0 +1,153 @@
+@model WalkInViewModel
+@{
+    ViewData["Title"] = "Walk-in order";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Walk-in order</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Branch" asp-action="WalkIn" method="get" class="row mt-1 no-print">
+            <input asp-for="CustomerSearch" placeholder="customer name, email or phone" style="flex:1" />
+            <button type="submit" class="btn btn-primary">Find the customer</button>
+        </form>
+
+        @if (Model.Customers.Count > 0)
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead><tr><th>Name</th><th>Email</th><th>Shipments</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var c in Model.Customers)
+                        {
+                            <tr>
+                                <td><strong>@c.FullName</strong></td>
+                                <td>@c.Email</td>
+                                <td>@c.ShipmentsCount</td>
+                                <td>
+                                    <a asp-controller="Branch" asp-action="WalkIn" asp-route-customerId="@c.CustomerID">Use this one</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <form asp-controller="Branch" asp-action="WalkIn" method="post" class="mt-2" data-validate>
+            <input type="hidden" asp-for="CustomerID" />
+            <input type="hidden" name="CustomerSearch" value="@Model.CustomerSearch" />
+
+            <h4 class="mb-0">Where we collect it</h4>
+            <div class="field">
+                <label asp-for="SenderAddressID">Sender address</label>
+                <select asp-for="SenderAddressID">
+                    @foreach (var a in Model.Addresses)
+                    {
+                        <option value="@a.AddressID">@a.Label - @a.FullAddress</option>
+                    }
+                </select>
+            </div>
+
+            <h4 class="mb-0">Who receives it</h4>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="ReceiverName">Name</label>
+                    <input asp-for="ReceiverName" data-required />
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverPhone">Phone</label>
+                    <input asp-for="ReceiverPhone" data-required />
+                </div>
+            </div>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="ReceiverCityID">City</label>
+                    <select asp-for="ReceiverCityID" asp-items="Model.Cities"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverStreet">Street</label>
+                    <input asp-for="ReceiverStreet" data-required />
+                </div>
+            </div>
+            <div class="grid grid-3">
+                <div class="field">
+                    <label asp-for="ReceiverBuildingNo">Building</label>
+                    <input asp-for="ReceiverBuildingNo" />
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverApartmentNo">Flat</label>
+                    <input asp-for="ReceiverApartmentNo" />
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverFloorNo">Floor</label>
+                    <input asp-for="ReceiverFloorNo" />
+                </div>
+            </div>
+            <div class="field">
+                <label asp-for="ReceiverLandmark">Landmark</label>
+                <input asp-for="ReceiverLandmark" />
+            </div>
+
+            <h4 class="mb-0">The parcel</h4>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="PackageTypeID">Package type</label>
+                    <select asp-for="PackageTypeID" asp-items="Model.PackageTypes"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="ServiceLevelID">Service level</label>
+                    <select asp-for="ServiceLevelID" asp-items="Model.ServiceLevels"></select>
+                </div>
+            </div>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="WeightKg">Weight (kg)</label>
+                    <input asp-for="WeightKg" type="number" step="0.1" min="0.1" data-positive />
+                </div>
+                <div class="field">
+                    <label asp-for="DeclaredValue">Declared value (EGP)</label>
+                    <input asp-for="DeclaredValue" type="number" step="1" min="0" />
+                </div>
+            </div>
+            <div class="field">
+                <label asp-for="PaymentMethod">Payment</label>
+                <select asp-for="PaymentMethod" asp-items="Model.PaymentMethods"></select>
+            </div>
+            <div class="field">
+                <label class="check">
+                    <input asp-for="IsInsured" /> Add insurance
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create the order</button>
+        </form>
+    </div>
+
+    <div>
+        <div class="card">
+            <h4 class="mb-0">How a walk-in works</h4>
+            <ul class="small muted">
+                <li>Find the customer first; every order belongs to somebody.</li>
+                <li>If they are not in the system, ask them to create an account on the website.</li>
+                <li>The price is worked out by the database, not by us.</li>
+                <li>Print the waybill from the branch dashboard afterwards.</li>
+            </ul>
+        </div>
+
+        @if (Model.CustomerID == 0)
+        {
+            <div class="card mt-2">
+                <div class="empty">
+                    <div class="empty-icon">?</div>
+                    <p>Look the customer up first, then the rest of the form makes sense.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

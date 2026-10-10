@@ -1,0 +1,43 @@
+@model SwiftShip.Web.ViewModels.ProfileViewModel
+@{
+    ViewData["Title"] = "My profile";
+    Layout = "_AppLayout";
+}
+<div style="max-width:620px">
+    <div class="card">
+        <h3>My profile</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Account" asp-action="Profile" method="post" data-validate>
+            <div class="field">
+                <label asp-for="FullName">Full name</label>
+                <input asp-for="FullName" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" type="email" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="Phone">Phone number</label>
+                <input asp-for="Phone" data-required />
+            </div>
+            <div class="field">
+                <label>Account type</label>
+                <input value="@Model.CustomerType" readonly />
+            </div>
+            @if (!string.IsNullOrEmpty(Model.CompanyName))
+            {
+                <div class="field">
+                    <label>Company</label>
+                    <input value="@Model.CompanyName" readonly />
+                </div>
+            }
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-controller="Account" asp-action="ChangePassword" class="btn btn-ghost">Change password</a>
+        </form>
+    </div>
+</div>

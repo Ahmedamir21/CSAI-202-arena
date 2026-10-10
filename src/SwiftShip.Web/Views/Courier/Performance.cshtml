@@ -1,0 +1,81 @@
+@model CourierPerformanceViewModel
+@{
+    ViewData["Title"] = "My performance";
+    Layout = "_AppLayout";
+    var summary = Model.Summary;
+}
+@if (summary == null)
+{
+    <div class="card">
+        <div class="empty">
+            <div class="empty-icon">&mdash;</div>
+            <p>We have no numbers for you yet. Deliver a few parcels and come back.</p>
+        </div>
+    </div>
+}
+else
+{
+    <div class="grid grid-4">
+        <div class="kpi accent-glow">
+            <div class="kpi-label">Deliveries done</div>
+            <div class="kpi-value" data-count="@summary.DeliveriesDone">0</div>
+            <div class="kpi-note">parcels handed over</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Success rate</div>
+            <div class="kpi-value" data-count="@summary.SuccessRatePercent" data-decimals="1">0</div>
+            <div class="kpi-note">percent of deliveries that went through</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Average rating</div>
+            <div class="kpi-value" data-count="@summary.AverageRating" data-decimals="2">0</div>
+            <div class="kpi-note">from @summary.RatingsCount customer rating(s)</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Cash collected</div>
+            <div class="kpi-value" data-count="@summary.CashCollected" data-decimals="2">0</div>
+            <div class="kpi-note">EGP from cash on delivery</div>
+        </div>
+    </div>
+
+    <div class="grid grid-4 mt-2">
+        <div class="kpi">
+            <div class="kpi-label">Pickups done</div>
+            <div class="kpi-value" data-count="@summary.PickupsDone">0</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Failed attempts</div>
+            <div class="kpi-value" data-count="@summary.FailedAttempts">0</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Average delivery time</div>
+            <div class="kpi-value" data-count="@summary.AverageDeliveryHours" data-decimals="1">0</div>
+            <div class="kpi-note">hours from booking to delivery</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Branch</div>
+            <div class="kpi-value" style="font-size:22px">@summary.BranchName</div>
+        </div>
+    </div>
+
+    <div class="card mt-3">
+        <h4 class="mb-0">Your last days</h4>
+        @if (Model.PerDay.Count == 0)
+        {
+            <p class="muted small mb-0">Nothing recorded day by day yet.</p>
+        }
+        else
+        {
+            <div class="chart-box mt-2">
+                <canvas data-chart="1" data-type="line"
+                        data-labels='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PerDay.Select(p => p.Label)))'
+                        data-series='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(new[] { new { name = "Deliveries", values = Model.PerDay.Select(p => p.Value) }, new { name = "Pickups", values = Model.PerDay.Select(p => p.Second) } }))'></canvas>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    @* Chart.js is only loaded on the pages that actually draw a chart. *@
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+}

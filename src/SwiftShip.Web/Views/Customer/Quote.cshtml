@@ -1,0 +1,85 @@
+@model SwiftShip.Web.ViewModels.QuoteViewModel
+@{
+    ViewData["Title"] = "Get a price quote";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3>What are you sending?</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        <form asp-controller="Customer" asp-action="Quote" method="post" data-validate>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="FromCityID">Collect from</label>
+                    <select asp-for="FromCityID" asp-items="Model.Cities"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="ToCityID">Deliver to</label>
+                    <select asp-for="ToCityID" asp-items="Model.Cities"></select>
+                </div>
+            </div>
+
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="WeightKg">Weight (kg)</label>
+                    <input asp-for="WeightKg" type="number" step="0.1" min="0.1" data-positive />
+                </div>
+                <div class="field">
+                    <label asp-for="ServiceLevelID">How fast?</label>
+                    <select asp-for="ServiceLevelID" asp-items="Model.ServiceLevels"></select>
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="DeclaredValue">Declared value (EGP)</label>
+                <input asp-for="DeclaredValue" type="number" step="1" min="0" />
+                <div class="hint">Only needed if you want insurance.</div>
+            </div>
+
+            <div class="field">
+                <label class="check">
+                    <input asp-for="IsInsured" /> Add insurance
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Show me the price</button>
+        </form>
+    </div>
+
+    <div>
+        @if (Model.Result != null)
+        {
+            <div class="card accent-glow">
+                <div class="kpi-label">Your price</div>
+                <div class="kpi-value accent">@Model.Result.Price.ToString("0.00") <span style="font-size:18px">EGP</span></div>
+                <p class="muted small mt-1">
+                    @Model.Result.LevelName &middot; promised in @Model.Result.MaxDays day(s)
+                    &middot; arrives by @Model.Result.ExpectedDeliveryDate.ToString("dd MMM yyyy")
+                </p>
+                <hr style="border:0;border-top:1px solid var(--border);margin:16px 0" />
+                <p class="small muted mb-0">How this price is built</p>
+                <ul class="small muted">
+                    <li>Base price from @Model.Result.FromZone to @Model.Result.ToZone: @Model.Result.BasePrice.ToString("0.00") EGP</li>
+                    <li>Price per kilogram: @Model.Result.PricePerKg.ToString("0.00") EGP</li>
+                    <li>Service level multiplier: x@Model.Result.PriceMultiplier.ToString("0.00")</li>
+                    <li>Insurance rate: @((Model.Result.InsuranceRate * 100).ToString("0.00"))% of the declared value</li>
+                </ul>
+                <a asp-controller="Customer" asp-action="Book" class="btn btn-primary btn-block mt-1">Book it now</a>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <div class="empty">
+                    <div class="empty-icon">?</div>
+                    <p>Fill in the form and the price appears here. Nothing is booked yet.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

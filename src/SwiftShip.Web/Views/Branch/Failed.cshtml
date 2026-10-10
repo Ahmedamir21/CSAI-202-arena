@@ -1,0 +1,67 @@
+@model BranchFailedViewModel
+@{
+    ViewData["Title"] = "Failed deliveries";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <h3 class="mb-0">Deliveries that did not go through</h3>
+    <p class="small muted">Either try again on another day, or send the parcel back to the sender.</p>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-error">@Model.Error</div>
+    }
+
+    @if (Model.Shipments.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">&#10003;</div>
+            <p>Nothing to deal with here. Every delivery went through.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap mt-2">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Tracking</th>
+                        <th>Receiver</th>
+                        <th>Destination</th>
+                        <th>Status</th>
+                        <th>Try again</th>
+                        <th>Send back</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Shipments)
+                    {
+                        <tr>
+                            <td><strong>@s.TrackingNumber</strong></td>
+                            <td>@s.ReceiverName (@s.ReceiverPhone)</td>
+                            <td>@s.DestinationCity</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                            <td>
+                                <form asp-controller="Branch" asp-action="Failed" method="post" class="row" style="gap:6px">
+                                    <input type="hidden" name="ShipmentID" value="@s.ShipmentID" />
+                                    <input type="hidden" name="Action" value="Reschedule" />
+                                    <input name="Notes" placeholder="note" style="width:180px" />
+                                    <button type="submit" class="btn btn-sm btn-primary">Try again</button>
+                                </form>
+                            </td>
+                            <td>
+                                <form asp-controller="Branch" asp-action="Failed" method="post" class="row" style="gap:6px"
+                                      onsubmit="return confirm('Send this parcel back to the sender?');">
+                                    <input type="hidden" name="ShipmentID" value="@s.ShipmentID" />
+                                    <input type="hidden" name="Action" value="Return" />
+                                    <input name="Notes" placeholder="note" style="width:180px" />
+                                    <button type="submit" class="btn btn-sm btn-danger">Send back</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

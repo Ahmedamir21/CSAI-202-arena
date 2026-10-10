@@ -1,0 +1,12 @@
+@{
+    ViewData["Title"] = "Access denied";
+    Layout = "_AppLayout";
+}
+<div class="card center" style="max-width:560px">
+    <h3 class="accent">You cannot open this page</h3>
+    <p class="muted">
+        Your account does not have the permission this page needs. If you think this is a mistake,
+        ask an administrator to check your role.
+    </p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to the home page</a>
+</div>

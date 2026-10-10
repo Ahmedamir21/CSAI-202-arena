@@ -1,0 +1,137 @@
+@model AdminCustomersViewModel
+@{
+    ViewData["Title"] = "Customers";
+    Layout = "_AppLayout";
+    var selected = Model.Selected;
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Our customers</h3>
+
+        <form asp-controller="Admin" asp-action="Customers" method="get" class="row mt-1 no-print">
+            <input asp-for="Search" placeholder="name, email or phone" style="flex:1" />
+            <button type="submit" class="btn btn-primary">Find</button>
+            <a asp-controller="Admin" asp-action="Customers" class="btn btn-ghost">Clear</a>
+        </form>
+
+        @if (Model.Customers.Count == 0)
+        {
+            <p class="muted small mb-0 mt-2">No customer matches.</p>
+        }
+        else
+        {
+            <div class="table-wrap mt-2">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Shipments</th>
+                            <th>Spent</th>
+                            <th>Last login</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in Model.Customers)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@c.FullName</strong>
+                                    @if (!string.IsNullOrEmpty(c.CompanyName))
+                                    {
+                                        <div class="small muted">@c.CompanyName</div>
+                                    }
+                                </td>
+                                <td>@c.Email</td>
+                                <td>@c.ShipmentsCount</td>
+                                <td>@c.TotalSpent.ToString("0.00") EGP</td>
+                                <td>@(c.LastLoginAt.HasValue ? c.LastLoginAt.Value.ToString("dd MMM yyyy") : "never")</td>
+                                <td>
+                                    <a asp-controller="Admin" asp-action="Customers"
+                                       asp-route-search="@Model.Search" asp-route-selected="@c.CustomerID">Open</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">@(selected == null ? "Pick a customer" : "History of " + selected.Customer.FullName)</h3>
+
+        @if (selected == null)
+        {
+            <div class="empty">
+                <div class="empty-icon">?</div>
+                <p>Choose a customer on the left to see everything they have sent.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row-between"><span class="muted small">Username</span><span>@selected.Customer.Username</span></div>
+            <div class="row-between"><span class="muted small">Type</span><span>@selected.Customer.CustomerType</span></div>
+            <div class="row-between"><span class="muted small">Shipments</span><span>@selected.Customer.ShipmentsCount</span></div>
+            <div class="row-between"><span class="muted small">Spent</span><span>@selected.Customer.TotalSpent.ToString("0.00") EGP</span></div>
+
+            @if (selected.Phones.Count > 0)
+            {
+                <h4 class="mt-2 mb-0">Phone numbers</h4>
+                <ul class="small muted">
+                    @foreach (var p in selected.Phones)
+                    {
+                        <li>@p.PhoneNumber (@p.PhoneType)</li>
+                    }
+                </ul>
+            }
+
+            @if (selected.Months.Count > 0)
+            {
+                <h4 class="mt-2 mb-0">Month by month</h4>
+                <div class="table-wrap mt-1">
+                    <table class="data">
+                        <thead><tr><th>Month</th><th>Shipments</th><th>Billed</th><th>Rating</th></tr></thead>
+                        <tbody>
+                            @foreach (var m in selected.Months)
+                            {
+                                <tr>
+                                    <td>@m.Label</td>
+                                    <td>@m.Shipments</td>
+                                    <td>@m.Billed.ToString("0.00") EGP</td>
+                                    <td>@(m.Rating > 0 ? m.Rating.ToString("0.00") : "-")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+            <h4 class="mt-2 mb-0">Their parcels</h4>
+            @if (selected.Shipments.Count == 0)
+            {
+                <p class="muted small mb-0">They have not sent anything.</p>
+            }
+            else
+            {
+                <div class="table-wrap mt-1">
+                    <table class="data">
+                        <thead><tr><th>Tracking</th><th>Route</th><th>Status</th><th>Price</th></tr></thead>
+                        <tbody>
+                            @foreach (var s in selected.Shipments)
+                            {
+                                <tr>
+                                    <td><strong>@s.TrackingNumber</strong></td>
+                                    <td>@s.OriginCity → @s.DestinationCity</td>
+                                    <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                                    <td>@s.Price.ToString("0.00") EGP</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </div>
+</div>

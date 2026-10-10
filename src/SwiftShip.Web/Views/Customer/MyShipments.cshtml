@@ -1,0 +1,81 @@
+@model SwiftShip.Web.ViewModels.MyShipmentsViewModel
+@{
+    ViewData["Title"] = "My shipments";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <div class="row-between">
+        <h3 class="mb-0">My shipments</h3>
+        <a asp-controller="Customer" asp-action="Book" class="btn btn-primary btn-sm">Book a shipment</a>
+    </div>
+
+    <form asp-controller="Customer" asp-action="MyShipments" method="get" class="grid grid-4 mt-2 no-print">
+        <div class="field mb-0">
+            <label asp-for="Search">Search</label>
+            <input asp-for="Search" placeholder="tracking number or receiver" />
+        </div>
+        <div class="field mb-0">
+            <label asp-for="StatusID">Status</label>
+            <select asp-for="StatusID" asp-items="Model.Statuses"></select>
+        </div>
+        <div class="field mb-0">
+            <label asp-for="FromDate">From</label>
+            <input asp-for="FromDate" type="date" />
+        </div>
+        <div class="field mb-0">
+            <label asp-for="ToDate">To</label>
+            <input asp-for="ToDate" type="date" />
+        </div>
+        <div class="field mb-0" style="align-self:end">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-controller="Customer" asp-action="ExportCsv" class="btn btn-ghost">Download CSV</a>
+        </div>
+    </form>
+
+    @if (Model.Shipments.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">+</div>
+            <p>No shipment matches what you are looking for.</p>
+            <a asp-controller="Customer" asp-action="Book" class="btn btn-primary">Book a shipment</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap mt-2">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Tracking</th>
+                        <th>Route</th>
+                        <th>Receiver</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Paid</th>
+                        <th>Price</th>
+                        <th>Rating</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Shipments)
+                    {
+                        <tr>
+                            <td><strong>@s.TrackingNumber</strong></td>
+                            <td>@s.OriginCity → @s.DestinationCity</td>
+                            <td>@s.ReceiverName</td>
+                            <td>@s.ServiceLevelName</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.PaymentStatus)</td>
+                            <td>@s.Price.ToString("0.00") EGP</td>
+                            <td>@(s.RatingStars.HasValue ? s.RatingStars.Value + " / 5" : "-")</td>
+                            <td>
+                                <a asp-controller="Customer" asp-action="Details" asp-route-id="@s.ShipmentID">Open</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

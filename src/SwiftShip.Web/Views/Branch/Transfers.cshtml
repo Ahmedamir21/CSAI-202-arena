@@ -1,0 +1,81 @@
+@model TransfersViewModel
+@{
+    ViewData["Title"] = "Branch transfers";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">Parcels arriving here</h3>
+        @if (Model.Incoming.Count == 0)
+        {
+            <p class="muted small mb-0">Nothing is on its way to this branch.</p>
+        }
+        else
+        {
+            <div class="table-wrap mt-1">
+                <table class="data">
+                    <thead>
+                        <tr>
+                            <th>Tracking</th>
+                            <th>From</th>
+                            <th>Sent</th>
+                            <th>Receiver</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in Model.Incoming)
+                        {
+                            <tr>
+                                <td><strong>@t.TrackingNumber</strong></td>
+                                <td>@t.FromBranch</td>
+                                <td>@t.SentAt.ToString("dd MMM yyyy, HH:mm")</td>
+                                <td>@t.ReceiverName</td>
+                                <td>
+                                    @if (t.ReceivedAt == null)
+                                    {
+                                        <form asp-controller="Branch" asp-action="ReceiveTransfer" method="post" style="display:inline">
+                                            <input type="hidden" name="transferId" value="@t.TransferID" />
+                                            <button type="submit" class="btn btn-sm btn-primary">Received</button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="small muted">@t.ReceivedAt.Value.ToString("dd MMM HH:mm")</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">Send a parcel to another branch</h3>
+        @if (Model.Shipments.Count == 0)
+        {
+            <p class="muted small mb-0">This branch has no parcel waiting to be sent on.</p>
+        }
+        else
+        {
+            <form asp-controller="Branch" asp-action="Transfer" method="post">
+                <div class="field">
+                    <label asp-for="ShipmentID">Which parcel?</label>
+                    <select asp-for="ShipmentID">
+                        @foreach (var s in Model.Shipments)
+                        {
+                            <option value="@s.ShipmentID">@s.TrackingNumber - to @s.ReceiverName in @s.DestinationCity</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label asp-for="ToBranchID">Send it to</label>
+                    <select asp-for="ToBranchID" asp-items="Model.Branches"></select>
+                </div>
+                <button type="submit" class="btn btn-primary">Send it on</button>
+            </form>
+        }
+    </div>
+</div>

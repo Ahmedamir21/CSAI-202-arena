@@ -1,0 +1,129 @@
+@model CreateStaffViewModel
+@{
+    ViewData["Title"] = "Add a member of staff";
+    Layout = "_AppLayout";
+}
+<div class="card" style="max-width:760px">
+    <h3 class="mb-0">Add a member of staff</h3>
+    <p class="small muted">
+        The account is created inactive until you say otherwise, and the person has to choose
+        their own password the first time they sign in.
+    </p>
+
+    @if (Model.Error != null)
+    {
+        <div class="alert alert-error">@Model.Error</div>
+    }
+
+    <form asp-controller="Admin" asp-action="CreateStaff" method="post" data-validate>
+        <div class="grid grid-2">
+            <div class="field">
+                <label asp-for="FullName">Full name</label>
+                <input asp-for="FullName" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="Role">What will they do?</label>
+                <select asp-for="Role" asp-items="Model.Roles" onchange="swiftshipRoleFields(this.value)"></select>
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="field">
+                <label asp-for="Username">Username</label>
+                <input asp-for="Username" data-required />
+            </div>
+            <div class="field">
+                <label asp-for="Password">Temporary password</label>
+                <input asp-for="Password" type="password" data-required />
+                <div class="hint">They must change it at the first login.</div>
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="field">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" type="email" />
+            </div>
+            <div class="field">
+                <label asp-for="Phone">Phone</label>
+                <input asp-for="Phone" />
+            </div>
+        </div>
+
+        <div class="grid grid-2">
+            <div class="field">
+                <label asp-for="HireDate">Hired on</label>
+                <input asp-for="HireDate" type="date" />
+            </div>
+            <div class="field">
+                <label asp-for="Salary">Monthly salary (EGP)</label>
+                <input asp-for="Salary" type="number" step="1" min="0" />
+            </div>
+        </div>
+
+        <div id="field-branch" class="field">
+            <label asp-for="BranchID">Branch</label>
+            <select asp-for="BranchID" asp-items="Model.Branches"></select>
+            <div class="hint">An administrator is not tied to a branch.</div>
+        </div>
+
+        <div id="field-courier" style="display:none">
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="LicenseNumber">Driving licence number</label>
+                    <input asp-for="LicenseNumber" />
+                </div>
+                <div class="field">
+                    <label asp-for="VehicleType">Vehicle</label>
+                    <select asp-for="VehicleType" asp-items="Model.VehicleTypes"></select>
+                </div>
+            </div>
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="PlateNumber">Plate number</label>
+                    <input asp-for="PlateNumber" />
+                </div>
+                <div class="field">
+                    <label asp-for="CapacityKg">Capacity (kg)</label>
+                    <input asp-for="CapacityKg" type="number" step="1" min="1" />
+                </div>
+            </div>
+        </div>
+
+        <div id="field-employee" style="display:none">
+            <div class="grid grid-2">
+                <div class="field">
+                    <label asp-for="Position">Position</label>
+                    <select asp-for="Position" asp-items="Model.Positions"></select>
+                </div>
+                <div class="field">
+                    <label asp-for="AccessLevel">Access level</label>
+                    <select asp-for="AccessLevel">
+                        <option value="Clerk">Clerk</option>
+                        <option value="Supervisor">Supervisor</option>
+                        <option value="Manager">Manager</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create the account</button>
+        <a asp-controller="Admin" asp-action="Staff" class="btn btn-ghost">Cancel</a>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        // only the fields that belong to the chosen role are shown
+        function swiftshipRoleFields(role) {
+            var courier = document.getElementById('field-courier');
+            var employee = document.getElementById('field-employee');
+            var branch = document.getElementById('field-branch');
+            if (!courier) return;
+            courier.style.display = (role === 'Courier') ? '' : 'none';
+            employee.style.display = (role === 'BranchEmployee') ? '' : 'none';
+            branch.style.display = (role === 'Admin') ? 'none' : '';
+        }
+        swiftshipRoleFields('@Model.Role');
+    </script>
+}

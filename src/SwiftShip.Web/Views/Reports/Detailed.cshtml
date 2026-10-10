@@ -1,0 +1,96 @@
+@model ReportPageViewModel
+@{
+    ViewData["Title"] = "Detailed reports";
+    Layout = "_AppLayout";
+
+    var tabs = new[]
+    {
+        new { Key = "delayed",  Label = "Late parcels" },
+        new { Key = "courier",  Label = "One courier" },
+        new { Key = "branch",   Label = "One branch" },
+        new { Key = "customer", Label = "One customer" }
+    };
+
+    string Active(string key) => string.Equals(Model.Report, key) ? "btn-primary" : "btn-ghost";
+}
+<h3 class="mb-0">Detailed reports</h3>
+<p class="small muted">Everything about one courier, one branch, one customer, or the parcels that are late.</p>
+
+<div class="row mt-1 no-print">
+    @foreach (var t in tabs)
+    {
+        <a asp-controller="Reports" asp-action="Detailed" asp-route-report="@t.Key"
+           class="btn btn-sm @Active(t.Key)">@t.Label</a>
+    }
+</div>
+
+<div class="card mt-2">
+    <form asp-controller="Reports" asp-action="Detailed" method="get" class="row-between no-print">
+        <input type="hidden" name="report" value="@Model.Report" />
+
+        <div class="row">
+            @if (Model.Report == "courier")
+            {
+                <div>
+                    <label class="small muted">Courier</label>
+                    <select asp-for="CourierID" asp-items="Model.Couriers" style="width:auto"></select>
+                </div>
+            }
+            @if (Model.Report == "branch")
+            {
+                <div>
+                    <label class="small muted">Branch</label>
+                    <select asp-for="BranchID" asp-items="Model.Branches" style="width:auto"></select>
+                </div>
+                <div>
+                    <label class="small muted">From</label>
+                    <input asp-for="FromDate" type="date" style="width:auto" />
+                </div>
+                <div>
+                    <label class="small muted">To</label>
+                    <input asp-for="ToDate" type="date" style="width:auto" />
+                </div>
+            }
+            @if (Model.Report == "customer")
+            {
+                <div>
+                    <label class="small muted">Customer</label>
+                    <select asp-for="CustomerID" asp-items="Model.Customers" style="width:auto"></select>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            <button type="submit" class="btn btn-primary">Show</button>
+            <a asp-controller="Reports" asp-action="Csv"
+               asp-route-report="@Model.Report"
+               asp-route-courierId="@Model.CourierID"
+               asp-route-branchId="@Model.BranchID"
+               asp-route-customerId="@Model.CustomerID"
+               asp-route-from="@(Model.FromDate?.ToString("yyyy-MM-dd"))"
+               asp-route-to="@(Model.ToDate?.ToString("yyyy-MM-dd"))"
+               class="btn btn-ghost">Download CSV</a>
+            <button type="button" class="btn btn-ghost" onclick="window.print()">Print</button>
+        </div>
+    </form>
+</div>
+
+@if (Model.Data == null)
+{
+    <div class="card mt-2"><div class="empty"><p>Nothing to show yet.</p></div></div>
+}
+else
+{
+    <div class="card mt-2">
+        <h3 class="mb-0">@Model.Data.Title</h3>
+        <p class="small muted">@Model.Data.Description</p>
+
+        @foreach (var table in Model.Data.Tables)
+        {
+            <div class="mt-2">
+                <h4>@table.Title</h4>
+                @await Html.PartialAsync("_ReportTable", table)
+            </div>
+        }
+    </div>
+}

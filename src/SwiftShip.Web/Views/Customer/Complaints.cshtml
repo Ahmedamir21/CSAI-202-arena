@@ -1,0 +1,90 @@
+@model ComplaintsViewModel
+@{
+    ViewData["Title"] = "My complaints";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-2">
+    <div class="card">
+        <h3 class="mb-0">My complaints</h3>
+
+        @if (Model.Error != null)
+        {
+            <div class="alert alert-error">@Model.Error</div>
+        }
+
+        @if (Model.Complaints.Count == 0)
+        {
+            <div class="empty">
+                <div class="empty-icon">&#10003;</div>
+                <p>You have not reported any problem. That is good news.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid mt-2" style="gap:14px">
+                @foreach (var c in Model.Complaints)
+                {
+                    <div class="card card-tight">
+                        <div class="row-between">
+                            <strong>@c.Subject</strong>
+                            @await Html.PartialAsync("_StatusChip", c.ComplaintStatus)
+                        </div>
+                        <p class="small muted">
+                            Shipment @c.TrackingNumber &middot; @c.OpenedAt.ToString("dd MMM yyyy, HH:mm")
+                        </p>
+                        <p class="small">@c.Description</p>
+                        @if (!string.IsNullOrEmpty(c.Resolution))
+                        {
+                            <div class="alert alert-info small mb-0">
+                                Our answer: @c.Resolution
+                                @if (c.ResolvedAt.HasValue)
+                                {
+                                    <text> (@c.ResolvedAt.Value.ToString("dd MMM yyyy"))</text>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="small muted mb-0">We are looking into it.</p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="card">
+        <h3 class="mb-0">Report a problem</h3>
+
+        @if (Model.MyShipments.Count == 0)
+        {
+            <p class="muted small">
+                You can only report a problem on a shipment you have already booked, and you have
+                none yet. <a asp-controller="Customer" asp-action="Book">Book one</a> first.
+            </p>
+        }
+        else
+        {
+            <form asp-controller="Customer" asp-action="Complaints" method="post" data-validate>
+                <div class="field">
+                    <label asp-for="ShipmentID">Which shipment?</label>
+                    <select asp-for="ShipmentID">
+                        @foreach (var s in Model.MyShipments)
+                        {
+                            <option value="@s.ShipmentID">@s.TrackingNumber - to @s.ReceiverName in @s.DestinationCity</option>
+                        }
+                    </select>
+                </div>
+                <div class="field">
+                    <label asp-for="Subject">Subject</label>
+                    <input asp-for="Subject" data-required />
+                </div>
+                <div class="field">
+                    <label asp-for="Description">What happened?</label>
+                    <textarea asp-for="Description" rows="5" data-required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send the complaint</button>
+            </form>
+        }
+    </div>
+</div>

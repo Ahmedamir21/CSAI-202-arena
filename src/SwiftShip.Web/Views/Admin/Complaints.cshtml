@@ -1,0 +1,62 @@
+@model AdminComplaintsViewModel
+@{
+    ViewData["Title"] = "Complaints";
+    Layout = "_AppLayout";
+}
+<div class="card">
+    <div class="row-between">
+        <h3 class="mb-0">Every complaint</h3>
+        <form asp-controller="Admin" asp-action="Complaints" method="get" class="row no-print">
+            <select asp-for="Status" asp-items="Model.Statuses" style="width:auto"></select>
+            <button type="submit" class="btn btn-sm btn-primary">Show</button>
+        </form>
+    </div>
+
+    @if (Model.Complaints.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">&#10003;</div>
+            <p>No complaint here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-2 mt-2" style="gap:16px">
+            @foreach (var c in Model.Complaints)
+            {
+                <div class="card card-tight">
+                    <div class="row-between">
+                        <strong>@c.Subject</strong>
+                        @await Html.PartialAsync("_StatusChip", c.ComplaintStatus)
+                    </div>
+                    <p class="small muted">
+                        Shipment @c.TrackingNumber &middot; @c.CustomerName &middot;
+                        opened @c.OpenedAt.ToString("dd MMM yyyy, HH:mm")
+                        @if (!string.IsNullOrEmpty(c.HandledByName))
+                        {
+                            <text> &middot; handled by @c.HandledByName</text>
+                        }
+                    </p>
+                    <p class="small">@c.Description</p>
+
+                    @if (!string.IsNullOrEmpty(c.Resolution))
+                    {
+                        <div class="alert alert-info small">@c.Resolution</div>
+                    }
+
+                    @if (c.ComplaintStatus != "Resolved")
+                    {
+                        <form asp-controller="Admin" asp-action="Complaints" method="post" data-validate>
+                            <input type="hidden" name="ComplaintID" value="@c.ComplaintID" />
+                            <div class="field">
+                                <label asp-for="Resolution">How are we closing it?</label>
+                                <textarea asp-for="Resolution" rows="3" data-required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-sm">Close the complaint</button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>

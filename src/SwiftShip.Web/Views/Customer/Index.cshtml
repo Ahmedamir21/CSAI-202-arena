@@ -1,0 +1,76 @@
+@model SwiftShip.Web.ViewModels.CustomerHomeViewModel
+@{
+    ViewData["Title"] = "Overview";
+    Layout = "_AppLayout";
+}
+<div class="grid grid-4">
+    <div class="kpi accent-glow">
+        <div class="kpi-label">On the way</div>
+        <div class="kpi-value" data-count="@Model.OnTheWay">0</div>
+        <div class="kpi-note">parcels moving right now</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Delivered</div>
+        <div class="kpi-value" data-count="@Model.Delivered">0</div>
+        <div class="kpi-note">parcels that arrived</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Waiting for pickup</div>
+        <div class="kpi-value" data-count="@Model.Open">0</div>
+        <div class="kpi-note">still to be collected</div>
+    </div>
+    <div class="kpi">
+        <div class="kpi-label">Total spent</div>
+        <div class="kpi-value" data-count="@Model.Spent" data-decimals="2">0</div>
+        <div class="kpi-note">EGP on paid shipments</div>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="row-between">
+        <h3 class="mb-0">Your latest shipments</h3>
+        <a asp-controller="Customer" asp-action="Book" class="btn btn-primary btn-sm">Book a shipment</a>
+    </div>
+
+    @if (Model.Recent.Count == 0)
+    {
+        <div class="empty">
+            <div class="empty-icon">+</div>
+            <p>You have not booked anything yet. Start with a price, it takes twenty seconds.</p>
+            <a asp-controller="Customer" asp-action="Quote" class="btn btn-primary">Get a price quote</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap mt-2">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Tracking</th>
+                        <th>To</th>
+                        <th>Receiver</th>
+                        <th>Service</th>
+                        <th>Status</th>
+                        <th>Price</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var s in Model.Recent)
+                    {
+                        <tr>
+                            <td><strong>@s.TrackingNumber</strong></td>
+                            <td>@s.DestinationCity</td>
+                            <td>@s.ReceiverName</td>
+                            <td>@s.ServiceLevelName</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                            <td>@s.Price.ToString("0.00") EGP</td>
+                            <td><a asp-controller="Customer" asp-action="Details" asp-route-id="@s.ShipmentID">Open</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="mt-2"><a asp-controller="Customer" asp-action="MyShipments">See all my shipments</a></p>
+    }
+</div>

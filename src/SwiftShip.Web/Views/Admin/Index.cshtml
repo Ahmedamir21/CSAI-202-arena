@@ -1,0 +1,67 @@
+@model AdminHomeViewModel
+@{
+    ViewData["Title"] = "Overview";
+    Layout = "_AppLayout";
+    var k = Model.Kpis;
+}
+@if (k == null)
+{
+    <div class="card"><div class="empty"><p>No numbers yet. Run the seed script and come back.</p></div></div>
+}
+else
+{
+    <div class="grid grid-4">
+        <div class="kpi accent-glow">
+            <div class="kpi-label">Shipments</div>
+            <div class="kpi-value" data-count="@k.TotalShipments">0</div>
+            <div class="kpi-note">@k.DeliveredPercent.ToString("0.0")% of them delivered</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Revenue</div>
+            <div class="kpi-value" data-count="@k.Revenue" data-decimals="2">0</div>
+            <div class="kpi-note">EGP invoiced</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">On time</div>
+            <div class="kpi-value" data-count="@k.OnTimePercent" data-decimals="1">0</div>
+            <div class="kpi-note">percent delivered before the promise</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Late right now</div>
+            <div class="kpi-value" data-count="@k.DelayedShipments">0</div>
+            <div class="kpi-note">past the promised date</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Customers</div>
+            <div class="kpi-value" data-count="@k.Customers">0</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Couriers on duty</div>
+            <div class="kpi-value" data-count="@k.ActiveCouriers">0</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Open complaints</div>
+            <div class="kpi-value" data-count="@k.OpenComplaints">0</div>
+            <div class="kpi-note"><a asp-controller="Admin" asp-action="Complaints">Answer them</a></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Average rating</div>
+            <div class="kpi-value" data-count="@k.AverageRating" data-decimals="2">0</div>
+            <div class="kpi-note">out of 5</div>
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <a asp-controller="Reports" asp-action="Index" class="btn btn-primary">Open the reports</a>
+        <a asp-controller="Admin" asp-action="Pricing" class="btn">Change the prices</a>
+        <a asp-controller="Admin" asp-action="Staff" class="btn">Manage the staff</a>
+    </div>
+
+    <div class="card mt-3">
+        <div class="row-between">
+            <h3 class="mb-0">Parcels that are late</h3>
+            <a asp-controller="Reports" asp-action="Detailed" asp-route-report="delayed" class="btn btn-sm btn-ghost">Open the full report</a>
+        </div>
+        @await Html.PartialAsync("_ReportTable", Model.Delayed?.Tables?.FirstOrDefault())
+    </div>
+}
