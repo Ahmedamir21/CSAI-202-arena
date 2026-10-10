@@ -21,7 +21,7 @@ else
             <span class="muted small">@Model.Shipment.OriginCity → @Model.Shipment.DestinationCity</span>
         </div>
         <div class="row no-print">
-            @await Html.PartialAsync("_StatusChip", Model.Shipment.CurrentStatus)
+            @await Html.PartialAsync("_StatusChip", Model.Shipment.CurrentStatus ?? "")
             @if (Model.CanCancel)
             {
                 <button type="button" class="btn btn-sm btn-danger" onclick="document.getElementById('cancel-form').style.display='block'">Cancel shipment</button>
@@ -93,7 +93,7 @@ else
             <div class="row-between"><span class="muted small">Booked on</span><span>@Model.Shipment.CreatedAt.ToString("dd MMM yyyy, HH:mm")</span></div>
             <div class="row-between"><span class="muted small">Promised by</span><span>@Model.Shipment.ExpectedDeliveryDate.ToString("dd MMM yyyy")</span></div>
             <div class="row-between"><span class="muted small">Price</span><span><strong>@Model.Shipment.Price.ToString("0.00") EGP</strong></span></div>
-            <div class="row-between"><span class="muted small">Payment</span><span>@await Html.PartialAsync("_StatusChip", Model.Shipment.PaymentStatus)</span></div>
+            <div class="row-between"><span class="muted small">Payment</span><span>@await Html.PartialAsync("_StatusChip", Model.Shipment.PaymentStatus ?? "")</span></div>
         </div>
     </div>
 

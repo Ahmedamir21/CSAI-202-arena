@@ -28,7 +28,7 @@
                         &middot; @Model.Shipment.WeightKg.ToString("0.##") kg
                     </span>
                 </div>
-                @await Html.PartialAsync("_StatusChip", Model.Shipment.CurrentStatus)
+                @await Html.PartialAsync("_StatusChip", Model.Shipment.CurrentStatus ?? "")
             </div>
 
             <div class="grid grid-3 mt-2">

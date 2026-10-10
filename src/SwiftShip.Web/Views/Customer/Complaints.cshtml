@@ -27,7 +27,7 @@
                     <div class="card card-tight">
                         <div class="row-between">
                             <strong>@c.Subject</strong>
-                            @await Html.PartialAsync("_StatusChip", c.ComplaintStatus)
+                            @await Html.PartialAsync("_StatusChip", c.ComplaintStatus ?? "")
                         </div>
                         <p class="small muted">
                             Shipment @c.TrackingNumber &middot; @c.OpenedAt.ToString("dd MMM yyyy, HH:mm")

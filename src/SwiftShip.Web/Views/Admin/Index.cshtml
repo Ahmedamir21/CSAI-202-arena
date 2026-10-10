@@ -3,6 +3,9 @@
     ViewData["Title"] = "Overview";
     Layout = "_AppLayout";
     var k = Model.Kpis;
+    // an empty table rather than null: a partial given a null model falls back to the
+    // model of the page that called it, which is not the type it expects
+    var delayed = Model.Delayed?.Tables?.FirstOrDefault() ?? new ReportTable();
 }
 @if (k == null)
 {
@@ -62,6 +65,6 @@ else
             <h3 class="mb-0">Parcels that are late</h3>
             <a asp-controller="Reports" asp-action="Detailed" asp-route-report="delayed" class="btn btn-sm btn-ghost">Open the full report</a>
         </div>
-        @await Html.PartialAsync("_ReportTable", Model.Delayed?.Tables?.FirstOrDefault())
+        @await Html.PartialAsync("_ReportTable", delayed)
     </div>
 }

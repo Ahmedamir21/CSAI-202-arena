@@ -40,7 +40,7 @@
                             <td><strong>@s.TrackingNumber</strong></td>
                             <td>@s.ReceiverName (@s.ReceiverPhone)</td>
                             <td>@s.DestinationCity</td>
-                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
                             <td>
                                 <form asp-controller="Branch" asp-action="Failed" method="post" class="row" style="gap:6px">
                                     <input type="hidden" name="ShipmentID" value="@s.ShipmentID" />

@@ -63,7 +63,7 @@
                             <td>@s.DestinationCity</td>
                             <td>@s.ReceiverName</td>
                             <td>@s.ServiceLevelName</td>
-                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                            <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
                             <td>@s.Price.ToString("0.00") EGP</td>
                             <td><a asp-controller="Customer" asp-action="Details" asp-route-id="@s.ShipmentID">Open</a></td>
                         </tr>

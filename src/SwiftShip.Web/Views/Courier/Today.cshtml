@@ -30,7 +30,7 @@
                             <strong>@t.TrackingNumber</strong>
                             <div class="small muted">@t.AssignmentType &middot; @t.PackageTypeName &middot; @t.WeightKg.ToString("0.##") kg</div>
                         </div>
-                        @await Html.PartialAsync("_StatusChip", t.CurrentStatus)
+                        @await Html.PartialAsync("_StatusChip", t.CurrentStatus ?? "")
                     </div>
 
                     <div class="row-between mt-1"><span class="muted small">Who</span><span>@t.ContactName &middot; @t.ContactPhone</span></div>

@@ -35,7 +35,7 @@
                             <tr>
                                 <td><strong>@s.TrackingNumber</strong></td>
                                 <td>@s.OriginCity → @s.DestinationCity</td>
-                                <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus)</td>
+                                <td>@await Html.PartialAsync("_StatusChip", s.CurrentStatus ?? "")</td>
                                 <td>
                                     <button type="button" class="linkish"
                                             onclick="document.getElementById('correct-@s.ShipmentID').style.display='block'">Correct</button>

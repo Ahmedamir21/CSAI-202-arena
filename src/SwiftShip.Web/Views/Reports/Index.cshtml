@@ -3,6 +3,13 @@
     ViewData["Title"] = "Reports";
     Layout = "_AppLayout";
     var k = Model.Kpis;
+    // an empty object rather than null: a partial given a null model falls back to the
+    // model of the page that called it, which is not the type it expects
+    var revenue = Model.RevenueByBranch ?? new ReportData();
+    var leaderboard = Model.Leaderboard ?? new ReportData();
+    var routes = Model.Routes ?? new ReportData();
+    var onTime = Model.OnTime ?? new ReportData();
+    var complaints = Model.Complaints ?? new ReportData();
 }
 <div class="row-between">
     <h3 class="mb-0">How the company is doing</h3>
@@ -71,7 +78,7 @@
                asp-route-from="@(Model.FromDate?.ToString("yyyy-MM-dd"))" asp-route-to="@(Model.ToDate?.ToString("yyyy-MM-dd"))"
                class="btn btn-sm btn-ghost no-print">CSV</a>
         </div>
-        @await Html.PartialAsync("_Chart", Model.RevenueByBranch)
+        @await Html.PartialAsync("_Chart", revenue)
     </div>
 
     <div>
@@ -79,7 +86,7 @@
             <h4>Best couriers</h4>
             <a asp-controller="Reports" asp-action="Csv" asp-route-report="leaderboard" class="btn btn-sm btn-ghost no-print">CSV</a>
         </div>
-        @await Html.PartialAsync("_Chart", Model.Leaderboard)
+        @await Html.PartialAsync("_Chart", leaderboard)
     </div>
 
     <div>
@@ -87,7 +94,7 @@
             <h4>Busiest routes</h4>
             <a asp-controller="Reports" asp-action="Csv" asp-route-report="routes" class="btn btn-sm btn-ghost no-print">CSV</a>
         </div>
-        @await Html.PartialAsync("_Chart", Model.Routes)
+        @await Html.PartialAsync("_Chart", routes)
     </div>
 
     <div>
@@ -97,7 +104,7 @@
                asp-route-from="@(Model.FromDate?.ToString("yyyy-MM-dd"))" asp-route-to="@(Model.ToDate?.ToString("yyyy-MM-dd"))"
                class="btn btn-sm btn-ghost no-print">CSV</a>
         </div>
-        @await Html.PartialAsync("_Chart", Model.OnTime)
+        @await Html.PartialAsync("_Chart", onTime)
     </div>
 </div>
 
@@ -107,8 +114,8 @@
         <a asp-controller="Reports" asp-action="Csv" asp-route-report="complaints" class="btn btn-sm btn-ghost no-print">CSV</a>
     </div>
     <div class="grid grid-2">
-        <div>@await Html.PartialAsync("_Chart", Model.Complaints)</div>
-        <div>@await Html.PartialAsync("_ReportTable", Model.Complaints?.Tables?.FirstOrDefault())</div>
+        <div>@await Html.PartialAsync("_Chart", complaints)</div>
+        <div>@await Html.PartialAsync("_ReportTable", complaints.Tables.FirstOrDefault() ?? new ReportTable())</div>
     </div>
 </div>
 
