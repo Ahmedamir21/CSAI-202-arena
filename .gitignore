@@ -1,0 +1,21 @@
+# Build results of the .NET project
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+
+# Secrets: the connection string is never committed, it lives in user secrets
+appsettings.Development.local.json
+secrets.json
+
+# Exports (the docx files are made by tools/export_docx.py)
+export/
+
+# Editor and OS noise
+.vs/
+.vscode/
+.idea/
+.DS_Store
+__pycache__/
+*.pyc

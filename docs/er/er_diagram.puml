@@ -1,0 +1,300 @@
+@startuml SwiftShip_ER_Diagram
+' ---------------------------------------------------------------------------
+' SwiftShip ER diagram - PlantUML source.
+' PlantUML uses the crow's-foot notation, so the (min,max) pairs of the
+' draw.io diagram are written here as edge symbols plus a text label:
+'   ||--o{   means  (0,n) on the right side and (1,1) on the left side
+' Weak entities, the inheritance triangle and the ternary relationship are
+' marked with notes; the draw.io file draws them with the real lecture shapes.
+' ---------------------------------------------------------------------------
+title SwiftShip - Entity Relationship diagram\n(page 1: entities and relationships)
+
+skinparam linetype ortho
+skinparam monochrome true
+skinparam shadowing false
+skinparam classFontSize 11
+skinparam defaultFontSize 11
+
+' ---------------------------- authentication -------------------------------
+entity "UserAccount" as UA {
+  * UserID <<generated>>
+  --
+  * Username : varchar(60) <<unique>>
+  * PasswordHash : varbinary(64)
+  * PasswordSalt : varbinary(32)
+  * Role : {Customer, Courier, BranchEmployee, Admin}
+  * IsActive : bit
+  * CreatedAt : datetime2
+  LastLoginAt : datetime2
+  MustChangePassword : bit
+}
+
+' ------------------------------- customer ----------------------------------
+entity "Customer" as CU {
+  * CustomerID : int  <<FK to UserAccount>>
+  --
+  * FullName : nvarchar(120)
+  * Email : nvarchar(160) <<unique>>
+  * CustomerType : {Individual, Business}
+  CompanyName : nvarchar(120)
+  CreatedAt : datetime2
+  {Phone} : (Number, PhoneType)  <<multivalued>>
+}
+
+entity "CustomerPhone" as CP {
+  * PhoneID <<generated>>
+  --
+  * CustomerID : int <<FK>>
+  * PhoneNumber : varchar(30)
+  * PhoneType : {Mobile, Landline, Work}
+}
+
+' --------------------------- employee hierarchy ----------------------------
+entity "Employee" as EM {
+  * EmployeeID : int <<FK to UserAccount>>
+  --
+  * FullName : nvarchar(120)
+  * Phone : varchar(30)
+  Email : nvarchar(160)
+  * HireDate : date
+  Salary : decimal(10,2)
+  AccessLevel : varchar(30)   ' admins only
+  * IsActive : bit
+  BranchID : int <<FK>>
+  SupervisorID : int <<FK, recursive>>
+}
+
+entity "Courier" as CO {
+  * CourierID : int <<FK to Employee>>
+  --
+  * LicenseNumber : varchar(40) <<unique>>
+  * CourierStatus : {Available, OnRoute, Off}
+  PlateNumber : varchar(20)
+  VehicleType : {Bike, Van, Truck}
+  CapacityKg : decimal(8,2)
+}
+
+entity "BranchEmployee" as BE {
+  * EmployeeID : int <<FK to Employee>>
+  --
+  * Position : {Clerk, Supervisor, Manager}
+}
+
+' ------------------------------ geography ----------------------------------
+entity "Zone" as ZO {
+  * ZoneID <<generated>>
+  --
+  * ZoneName : nvarchar(60)
+  Description : nvarchar(200)
+}
+
+entity "City" as CI {
+  * CityID <<generated>>
+  --
+  * CityName : nvarchar(80)
+  * GovernorateName : nvarchar(80)
+  ZoneID : int <<FK>>
+}
+
+entity "Branch" as BR {
+  * BranchID <<generated>>
+  --
+  * BranchName : nvarchar(80)
+  Street : nvarchar(160)
+  BuildingNo : nvarchar(20)
+  Phone : varchar(30)
+  IsActive : bit
+  ManagerEmployeeID : int <<FK>>
+  ManagerStartDate : date
+}
+
+entity "Address" as AD {
+  * AddressID <<generated>>
+  --
+  CustomerID : int <<FK, nullable>>
+  Label : {Home, Work, Warehouse, Other}
+  Street, BuildingNo, ApartmentNo, FloorNo, Landmark  <<composite>>
+  Notes : nvarchar(300)
+  IsDefault : bit
+  CityID : int <<FK>>
+}
+
+' ------------------------------- shipment ----------------------------------
+entity "Shipment" as SH {
+  * ShipmentID <<generated>>
+  --
+  * TrackingNumber : char(10) <<unique>>
+  * CustomerID : int <<FK>>
+  * SenderAddressID : int <<FK>>
+  * ReceiverName : nvarchar(120)
+  * ReceiverPhone : varchar(30)
+  * ReceiverAddressID : int <<FK>>
+  * PackageTypeID : int <<FK>>
+  * ServiceLevelID : int <<FK>>
+  * WeightKg : decimal(8,3)
+  DeclaredValue : decimal(10,2)
+  IsInsured : bit
+  PaymentMethod : {CashOnDelivery, Card, Wallet}
+  CreatedAt : datetime2
+  ExpectedDeliveryDate : date
+  DeliveredAt : datetime2
+  RatingStars : tinyint
+  RatingComment : nvarchar(500)
+  RatedAt : datetime2
+  CancelReason : nvarchar(300)
+  ProofReceiverName : nvarchar(120)
+  ProofCode : char(6)
+  PricingRuleID : int <<FK>>
+  .. derived ..
+  Price : decimal(10,2) <<derived>>
+  CurrentStatus : varchar(30) <<derived>>
+}
+
+entity "ShipmentStatusHistory" as SS {
+  * ShipmentID : int <<FK>>
+  * SeqNo : int <<partial key>>
+  --
+  * StatusName : {Created, PickedUp, AtBranch, InTransit, OutForDelivery, Delivered, FailedAttempt, Returned, Cancelled}
+  * ChangedAt : datetime2
+  ChangedByEmployeeID : int <<FK, nullable>>
+  BranchID : int <<FK, nullable>>
+  Notes : nvarchar(400)
+}
+note right of SS : WEAK ENTITY of Shipment\nidentified by (ShipmentID, SeqNo)
+
+entity "Status" as ST {
+  * StatusID <<generated>>
+  --
+  * StatusName : varchar(30) <<unique>>
+  SortOrder : int
+}
+note bottom of ST : LOOKUP TABLE.\nIn the ER this is a plain attribute\nof ShipmentStatusHistory; it is\nnormalised into a table at the\nschema step so the allowed\ntransitions can be stored.
+
+' ------------------------------- lookups -----------------------------------
+entity "PackageType" as PT {
+  * PackageTypeID <<generated>>
+  --
+  * TypeName : nvarchar(60) <<unique>>
+  MaxWeightKg : decimal(8,2)
+  SizeNote : nvarchar(200)
+}
+
+entity "ServiceLevel" as SL {
+  * ServiceLevelID <<generated>>
+  --
+  * LevelName : nvarchar(40) <<unique>>
+  * PriceMultiplier : decimal(5,2)
+  * MaxDays : int
+}
+
+entity "PricingRule" as PR {
+  * RuleID <<generated>>
+  --
+  * FromZoneID : int <<FK>>
+  * ToZoneID : int <<FK>>
+  * BasePrice : decimal(10,2)
+  * PricePerKg : decimal(10,2)
+  * InsuranceRate : decimal(5,4)
+  * EffectiveFrom : date
+  EffectiveTo : date
+  IsActive : bit
+}
+
+' -------------------------------- money ------------------------------------
+entity "Payment" as PA {
+  * PaymentID <<generated>>
+  --
+  * ShipmentID : int <<FK>>
+  * Amount : decimal(10,2)
+  * PaymentMethod : {CashOnDelivery, Card, Wallet}
+  * PaymentStatus : {Pending, Paid, Refunded}
+  PaidAt : datetime2
+  ReferenceNumber : varchar(40)
+  CollectedByCourierID : int <<FK, nullable>>
+}
+
+entity "Complaint" as CM {
+  * ComplaintID <<generated>>
+  --
+  * ShipmentID : int <<FK>>
+  * CustomerID : int <<FK>>
+  * Subject : nvarchar(160)
+  * Description : nvarchar(1000)
+  * ComplaintStatus : {Open, InProgress, Resolved}
+  * OpenedAt : datetime2
+  Resolution : nvarchar(1000)
+  ResolvedByEmployeeID : int <<FK, nullable>>
+  ResolvedAt : datetime2
+}
+
+' ------------------- relationships that become their own tables -------------
+entity "Assignment" as AS {
+  * AssignmentID <<generated>>
+  --
+  * ShipmentID : int <<FK>>
+  * CourierID : int <<FK>>
+  * AssignmentType : {Pickup, Delivery}
+  * AssignedAt : datetime2
+  AssignedByEmployeeID : int <<FK>>
+  CompletedAt : datetime2
+  Notes : nvarchar(300)
+}
+note bottom of AS : M:N relationship HANDLES\n(Courier, Shipment) with attributes
+
+entity "BranchTransfer" as BT {
+  * TransferID <<generated>>
+  --
+  * ShipmentID : int <<FK>>
+  * FromBranchID : int <<FK>>
+  * ToBranchID : int <<FK>>
+  * SentAt : datetime2
+  ReceivedAt : datetime2
+  SentByEmployeeID : int <<FK>>
+}
+note bottom of BT : TERNARY relationship TRANSFERS\n(Shipment, Branch as From, Branch as To)
+
+' ------------------------------ relationships ------------------------------
+UA ||--o| CU : "HAS_CUSTOMER_PROFILE (0,1)-(1,1)"
+UA ||--o| EM : "HAS_EMPLOYEE_RECORD (0,1)-(1,1)"
+
+EM  |o--o| CO : "IS_A (inheritance)"
+EM  |o--o| BE : "IS_A (inheritance)"
+note right of EM : INHERITANCE TRIANGLE\nsuperclass Employee\nsubclasses Courier, BranchEmployee\nAdmin = role, stored in\nUserAccount.Role + Employee.AccessLevel
+
+EM  |o--o{ EM : "SUPERVISES (recursive)\nsupervisor (0,n) - subordinate (0,1)"
+
+BR  ||--o{ EM : "EMPLOYS (0,n)-(1,1)"
+BR  ||--o| EM : "MANAGED_BY (1,1)-(0,1)"
+BR  ||--o{ CI : "BRANCH_IN_CITY (1,1)-(0,n)"
+CI  ||--o{ ZO : "CITY_IN_ZONE (1,1)-(0,n)"
+
+CU  ||--o{ CP : "HAS_PHONE (multivalued)"
+CU  |o--o{ AD : "OWNS_ADDRESS (0,n)-(1,1)"
+AD  ||--o{ CI : "ADDRESS_IN_CITY (1,1)-(0,n)"
+
+CU  ||--o{ SH : "SENDS (0,n)-(1,1)"
+SH  ||--o{ AD : "PICKED_UP_FROM (1,1)-(0,n)"
+SH  ||--o{ AD : "DELIVERED_TO (1,1)-(0,n)"
+SH  ||--o{ PT : "PACKED_AS (1,1)-(0,n)"
+SH  ||--o{ SL : "SHIPPED_WITH (1,1)-(0,n)"
+SH  ||--o{ PR : "PRICED_BY (1,1)-(0,n)"
+SH  ||--|{ SS : "HAS_STATUS_STEP (1,n)-(1,1)"
+SS  }o--o| ST : "RECORDS (lookup)"
+SS  }o--o| EM : "RECORDED_BY (0,n)-(0,1)"
+SS  }o--o| BR : "LODGED_AT (0,n)-(0,1)"
+
+CO  }o--o{ AS : "HANDLES (0,n)"
+SH  ||--o{ AS : "HANDLED_BY (0,n)"
+
+SH  }o--o{ BT : "TRANSFERS (0,n)"
+BR  }o--o{ BT : "FROM (0,n)"
+BR  }o--o{ BT : "TO (0,n)"
+
+SH  ||--o{ PA : "PAID_BY (0,n)-(1,1)"
+CO  }o--o| PA : "COLLECTED_BY (0,n)-(0,1)"
+
+CU  ||--o{ CM : "FILES (0,n)-(1,1)"
+SH  ||--o{ CM : "ABOUT (1,1)-(0,n)"
+EM  }o--o| CM : "RESOLVES (0,n)-(0,1)"
+
+@enduml

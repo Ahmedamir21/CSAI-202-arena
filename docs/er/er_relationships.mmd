@@ -1,0 +1,56 @@
+%% SwiftShip ER diagram - page 1: entities and relationships only.
+%% Mermaid has no diamond-on-an-edge, so relationships are hexagons ({{ }});
+%% the draw.io file in this folder draws them as real diamonds.
+%% "{{ }}" = relationship, "[[ ]]" = weak entity (double rectangle),
+%% "===" = thick link, used for total participation (double line).
+flowchart LR
+  UA[UserAccount]
+  CU[Customer]
+  EM[Employee]
+  CO[Courier]
+  BE[BranchEmployee]
+  BR[Branch]
+  CI[City]
+  ZO[Zone]
+  AD[Address]
+  SH[Shipment]
+  SS[[ShipmentStatusHistory]]
+  PT[PackageType]
+  SL[ServiceLevel]
+  PR[PricingRule]
+  PA[Payment]
+  CM[Complaint]
+  AN{{"note: Admin is a ROLE of Employee"}}
+
+  UA ---|"(0,1)"| R1{{HAS_CUSTOMER_PROFILE}} ---|"(1,1)"| CU
+  UA ---|"(0,1)"| R2{{HAS_EMPLOYEE_RECORD}} ---|"(1,1)"| EM
+  EM --- ISA{{"IS_A (inheritance)"}}
+  ISA --- CO
+  ISA --- BE
+  EM -.- AN
+  EM -.->|"supervisor (0,n)"| R4{{SUPERVISES}} -.->|"subordinate (0,1)"| EM
+  BR ---|"(0,n)"| R5{{EMPLOYS}} ---|"(1,1)"| EM
+  BR ===|"(1,1)"| R6{{MANAGED_BY}} ---|"(0,1)"| EM
+  BR ===|"(1,1)"| R7{{BRANCH_IN_CITY}} ---|"(0,n)"| CI
+  CI ===|"(1,1)"| R8{{CITY_IN_ZONE}} ---|"(0,n)"| ZO
+  CU ---|"(0,n)"| R9{{OWNS_ADDRESS}} ---|"(1,1)"| AD
+  AD ===|"(1,1)"| R10{{ADDRESS_IN_CITY}} ---|"(0,n)"| CI
+  CU ---|"(0,n)"| R11{{SENDS}} ---|"(1,1)"| SH
+  SH ===|"(1,1)"| R12{{PICKED_UP_FROM}} ---|"(0,n)"| AD
+  SH ===|"(1,1)"| R13{{DELIVERED_TO}} ---|"(0,n)"| AD
+  SH ===|"(1,1)"| R14{{PACKED_AS}} ---|"(0,n)"| PT
+  SH ===|"(1,1)"| R15{{SHIPPED_WITH}} ---|"(0,n)"| SL
+  SH ===|"(1,1)"| R16{{PRICED_BY}} ---|"(0,n)"| PR
+  SH ===|"(1,n)"| R17{{HAS_STATUS_STEP}} ===|"(1,1)"| SS
+  SS ---|"(0,n)"| R18{{RECORDED_BY}} ---|"(0,1)"| EM
+  SS ---|"(0,n)"| R19{{LODGED_AT}} ---|"(0,1)"| BR
+  CO ---|"(0,n)"| R20{{HANDLES}} ---|"(0,n)"| SH
+  SH ---|"(0,n)"| R21{{"TRANSFERS (ternary)"}} ---|"(0,n)"| BR
+  SH ---|"(0,n)"| R22{{PAID_BY}} ---|"(1,1)"| PA
+  PA ---|"(0,n)"| R23{{COLLECTED_BY}} ---|"(0,1)"| CO
+  CU ---|"(0,n)"| R24{{FILES}} ---|"(1,1)"| CM
+  CM ===|"(1,1)"| R25{{ABOUT}} ---|"(0,n)"| SH
+  EM ---|"(0,n)"| R26{{RESOLVES}} ---|"(0,1)"| CM
+
+  R20 -.- A1(["AssignmentType, AssignedAt, CompletedAt, Notes"])
+  R21 -.- A2(["SentAt, ReceivedAt, Notes"])
